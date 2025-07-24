@@ -22,7 +22,7 @@ public class NasaController (AppDbContext dbContext): ControllerBase
         var query = BuildQuery(fromYear, toYear, recclass);
         var pages = await query.CountAsync();
         
-        var res = query
+        var data = query
             .Skip(page * itemsPerPage)
             .Take(itemsPerPage)
             .GroupBy(x => x.Year)
@@ -34,9 +34,9 @@ public class NasaController (AppDbContext dbContext): ControllerBase
             })
             .OrderBy(x => x.Year)
             .ToListAsync();
-        
 
-        return Ok(res);
+
+        return Ok(new { pages, data });
 
     }
 

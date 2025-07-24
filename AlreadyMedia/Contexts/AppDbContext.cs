@@ -6,7 +6,7 @@ namespace AlreadyMedia.Contexts;
 public sealed class AppDbContext : DbContext
 {
     private readonly IConfiguration _configuration;
-    protected DbSet<NasaDataset> NasaDbSet { get; init; }
+    public DbSet<NasaDataset> NasaDbSet { get; init; }
     
     public AppDbContext(DbContextOptions<AppDbContext> context, IConfiguration configuration) : base(context)
     {

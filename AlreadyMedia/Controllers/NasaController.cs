@@ -20,15 +20,21 @@ public class NasaController (AppDbContext dbContext): ControllerBase
     {
 
         var query = BuildQuery(fromYear, toYear, recclass);
+        var pages = await query.CountAsync();
         
         var res = query
             .Skip(page * itemsPerPage)
             .Take(itemsPerPage)
             .GroupBy(x => x.Year)
-            .OrderBy(x => x.Key)
+            .Select(x => new
+            {
+                Year = x.Key, 
+                Count = x.Count(), 
+                Mass = x.Average(item => item.Mass ?? 0)
+            })
+            .OrderBy(x => x.Year)
             .ToListAsync();
         
-        var pages = await dbContext.NasaDbSet.CountAsync();
 
         return Ok(res);
 

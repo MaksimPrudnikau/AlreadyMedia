@@ -1,13 +1,18 @@
 using AlreadyMedia.Configs;
+using AlreadyMedia.Contexts;
 using AlreadyMedia.Services;
 using Core;
 using Microsoft.Extensions.Options;
 
 namespace AlreadyMedia.Workers;
 
-public class NasaDatasetWorker(IServiceProvider services, ILogger<NasaDatasetWorker> logger, IOptions<NasaDatasetConfig> options) : BackgroundService
+public class NasaDatasetWorker(
+    IServiceProvider services,
+    ILogger<NasaDatasetWorker> logger,
+    IOptions<NasaDatasetConfig> options
+    ) : BackgroundService
 {
-    
+
     protected async override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
@@ -23,9 +28,13 @@ public class NasaDatasetWorker(IServiceProvider services, ILogger<NasaDatasetWor
 
         try
         {
-            var dataset = await GetDataset();
-
-            // TODO: Save to local DB
+            await using var scope = services.CreateAsyncScope();
+            var nasaClient = scope.ServiceProvider.GetRequiredService<INasaDatasetClient>();
+            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            
+            var dataset = await nasaClient.GetDatasetAsync();
+            await dbContext.AddRangeAsync(dataset);
+            await dbContext.SaveChangesAsync();
 
             logger.LogInformation("Successfully synced {count} NASA images", dataset.Count);
         }
@@ -34,17 +43,10 @@ public class NasaDatasetWorker(IServiceProvider services, ILogger<NasaDatasetWor
             logger.LogError(ex, "Error during NASA data sync");
         }
     }
-    
-    private async Task<ICollection<NasaDataset>> GetDataset()
-    {
-        using var scope = services.CreateScope();
-        var nasaClient = scope.ServiceProvider.GetRequiredService<INasaDatasetClient>();
-        return await nasaClient.GetDatasetAsync();
-    }
-    
+
     private async Task RetryUpdate(CancellationToken stoppingToken)
     {
-        var syncInterval = options.Value.SyncIntervalSeconds; 
+        var syncInterval = options.Value.SyncIntervalSeconds;
         await Task.Delay(TimeSpan.FromSeconds(syncInterval), stoppingToken);
     }
 }

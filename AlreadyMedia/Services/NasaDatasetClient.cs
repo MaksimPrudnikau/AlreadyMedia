@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using AlreadyMedia.Configs;
 using Core;
 using Microsoft.Extensions.Options;
@@ -15,7 +16,8 @@ public class NasaDatasetClient(HttpClient httpClient, IOptions<NasaDatasetConfig
 
     private readonly static JsonSerializerOptions JsonSerializerOptions = new()
     {
-        PropertyNameCaseInsensitive = true
+        PropertyNameCaseInsensitive = true,
+        NumberHandling = JsonNumberHandling.AllowReadingFromString,
     };
     
     public async Task<ICollection<NasaDataset>> GetDatasetAsync()

@@ -1,10 +1,9 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using AlreadyMedia.Configs;
 using Core;
 using Microsoft.Extensions.Options;
 
-namespace AlreadyMedia.Services;
+namespace NasaClientService;
 
 public interface INasaDatasetClient
 {

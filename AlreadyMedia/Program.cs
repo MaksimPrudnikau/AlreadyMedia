@@ -1,6 +1,4 @@
-using AlreadyMedia.Configs;
-using AlreadyMedia.Contexts;
-using AlreadyMedia.Extensions;
+using Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,12 +7,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<AppDbContext>();
-
-builder.Services
-    .AddOptions<NasaDatasetConfig>()
-    .Bind(builder.Configuration.GetSection("NasaDataset"));
-
-builder.Services.AddNasaServices();
 
 builder.Services.AddControllers();
 

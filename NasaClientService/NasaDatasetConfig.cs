@@ -1,4 +1,4 @@
-namespace AlreadyMedia.Configs;
+namespace NasaClientService;
 
 public class NasaDatasetConfig
 {

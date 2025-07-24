@@ -1,7 +1,7 @@
-using Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
-namespace AlreadyMedia.Contexts;
+namespace Core;
 
 public sealed class AppDbContext : DbContext
 {

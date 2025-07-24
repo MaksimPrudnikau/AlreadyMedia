@@ -1,8 +1,6 @@
-using AlreadyMedia.Contexts;
 using Core;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 
 namespace AlreadyMedia.Controllers;
 
@@ -19,13 +17,15 @@ public class NasaController (AppDbContext dbContext): ControllerBase
         [FromQuery]int itemsPerPage = 10)
     {
 
-        var query = BuildQuery(fromYear, toYear, recclass);
-        var pages = await query.CountAsync();
-        
-        var data = query
+        var query = BildQueryFromFilters(fromYear, toYear, recclass)
             .Skip(page * itemsPerPage)
             .Take(itemsPerPage)
-            .GroupBy(x => x.Year)
+            .GroupBy(x => x.Year);
+
+        double itemsCount = await query.CountAsync();
+        var pages = (int)Math.Ceiling(itemsCount / itemsPerPage);
+        
+        var res = await query
             .Select(x => new
             {
                 Year = x.Key, 
@@ -36,11 +36,11 @@ public class NasaController (AppDbContext dbContext): ControllerBase
             .ToListAsync();
 
 
-        return Ok(new { pages, data });
+        return Ok(new { pages, data = res });
 
     }
 
-    private IQueryable<NasaDataset> BuildQuery(
+    private IQueryable<NasaDataset> BildQueryFromFilters(
         int? fromYear,
         int? toYear,
         string? recClass)

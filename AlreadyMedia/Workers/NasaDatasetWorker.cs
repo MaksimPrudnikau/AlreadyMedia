@@ -34,6 +34,7 @@ public class NasaDatasetWorker(
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             
             var dataset = await nasaClient.GetDatasetAsync();
+            
             await dbContext.BulkInsertOrUpdateAsync(dataset);
             await dbContext.BulkSaveChangesAsync();
 

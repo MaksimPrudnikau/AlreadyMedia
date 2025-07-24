@@ -1,21 +1,38 @@
-﻿namespace Core;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
-public class NasaDataSet
+namespace Core;
+
+[Table("NasaDataset")]
+public class NasaDataset
 {
-    public string Id { get; set; }
-    
-    public string? Center { get; set; }
-    public string? Title { get; set; }
-    public string? Description { get; set; }
-    public string? Photographer { get; set; }
-    public string? Location { get; set; }
-    public string? KeywordsJson { get; set; }
-    
-    public DateTime? DateCreated { get; set; }
-    
-    public string? MediaType { get; set; }
-    public string? ThumbnailUrl { get; set; }
-    public string? FullResUrl { get; set; }
-    
-    public DateTime LastUpdated { get; set; } 
+    public int Id { get; init; }
+    public string Name { get; init; }
+    public string NameType { get; init; }
+    public string RecClass { get; init; }
+    public double Mass { get; init; }
+    public string Fall { get; init; }
+
+    private readonly DateTime _year;
+
+    public DateTime Year
+    {
+        get => _year;
+        init => _year = value.Kind == DateTimeKind.Unspecified
+            ? DateTime.SpecifyKind(value, DateTimeKind.Utc)
+            : value.ToUniversalTime();
+    }
+
+    public double RecLat
+    { get; init; }
+    public double RecLong { get; init; }
+
+    public Geolocation? Geolocation { get; init; }
+}
+
+[Owned]
+public class Geolocation
+{
+    public string? Type { get; init; }
+    public double[] Coordinates { get; init; } = [];
 }

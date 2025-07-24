@@ -1,6 +1,6 @@
 @AlreadyMedia_HostAddress = http://localhost:5040
 
-GET {{AlreadyMedia_HostAddress}}/weatherforecast/
+GET {{AlreadyMedia_HostAddress}}/nasa/dataset
 Accept: application/json
 
 ###

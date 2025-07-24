@@ -2,6 +2,7 @@ using AlreadyMedia.Configs;
 using AlreadyMedia.Contexts;
 using AlreadyMedia.Services;
 using Core;
+using EFCore.BulkExtensions;
 using Microsoft.Extensions.Options;
 
 namespace AlreadyMedia.Workers;
@@ -33,8 +34,8 @@ public class NasaDatasetWorker(
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             
             var dataset = await nasaClient.GetDatasetAsync();
-            await dbContext.AddRangeAsync(dataset);
-            await dbContext.SaveChangesAsync();
+            await dbContext.BulkInsertOrUpdateAsync(dataset);
+            await dbContext.BulkSaveChangesAsync();
 
             logger.LogInformation("Successfully synced {count} NASA images", dataset.Count);
         }

@@ -7,24 +7,32 @@ namespace Core;
 public class NasaDataset
 {
     public int Id { get; init; }
-    public string Name { get; init; }
-    public string NameType { get; init; }
-    public string RecClass { get; init; }
-    public double Mass { get; init; }
-    public string Fall { get; init; }
+    public string? Name { get; init; }
+    public string? NameType { get; init; }
+    public string? RecClass { get; init; }
+    public double? Mass { get; init; }
+    public string? Fall { get; init; }
 
-    private readonly DateTime _year;
+    private readonly DateTime? _year;
 
-    public DateTime Year
+    public DateTime? Year
     {
         get => _year;
-        init => _year = value.Kind == DateTimeKind.Unspecified
-            ? DateTime.SpecifyKind(value, DateTimeKind.Utc)
-            : value.ToUniversalTime();
+        init
+        {
+            if (!value.HasValue)
+            {
+                _year = null;
+                return;
+            }
+            
+            _year = value.Value.Kind == DateTimeKind.Unspecified
+                ? DateTime.SpecifyKind(value.Value, DateTimeKind.Utc)
+                : value.Value.ToUniversalTime();
+        }
     }
 
-    public double RecLat
-    { get; init; }
+    public double RecLat { get; init; }
     public double RecLong { get; init; }
 
     public Geolocation? Geolocation { get; init; }

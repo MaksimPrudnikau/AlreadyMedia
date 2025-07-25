@@ -1,7 +1,7 @@
-using Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
-namespace AlreadyMedia.Contexts;
+namespace Core;
 
 public sealed class AppDbContext : DbContext
 {
@@ -27,6 +27,8 @@ public sealed class AppDbContext : DbContext
         modelBuilder.Entity<NasaDataset>(entity =>
         {
             entity.HasKey(e => e.Id);
+
+            entity.HasIndex(e => e.Year); 
         
             entity.OwnsOne(e => e.Geolocation, g =>
             {

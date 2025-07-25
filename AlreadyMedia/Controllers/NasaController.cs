@@ -1,17 +1,20 @@
-using AlreadyMedia.Contexts;
 using Core;
+using Core.Models;
+using Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace AlreadyMedia.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class NasaController (AppDbContext dbContext)
+public class NasaController (INasaService nasaService): ControllerBase
 {
+    
     [HttpGet("dataset")]
-    public async Task<ActionResult<IEnumerable<NasaDataset>>> GetDataset()
+    public async Task<IActionResult> GetDataset([FromQuery] NasaDatasetListRequest request)
     {
-        return await dbContext.NasaDbSet.AsNoTracking().ToListAsync();
+        return Ok(await nasaService.GetFilteredDatasetListResponse(request));
     }
 }

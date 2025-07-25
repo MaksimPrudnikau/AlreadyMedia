@@ -1,6 +1,5 @@
-using AlreadyMedia.Configs;
-using AlreadyMedia.Contexts;
-using AlreadyMedia.Extensions;
+using Core;
+using Core.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,12 +8,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<AppDbContext>();
+builder.Services.AddHttpClient<INasaHttpClient, NasaHttpClient>();
 
-builder.Services
-    .AddOptions<NasaDatasetConfig>()
-    .Bind(builder.Configuration.GetSection("NasaDataset"));
+builder.Services.AddTransient<INasaCacheService, NasaCacheService>();
+builder.Services.AddTransient<INasaService, NasaService>();
+builder.Services.AddTransient<INasaBackgroundService, NasaBackgroundService>();
 
-builder.Services.AddNasaServices();
+builder.Services.AddMemoryCache();
 
 builder.Services.AddControllers();
 

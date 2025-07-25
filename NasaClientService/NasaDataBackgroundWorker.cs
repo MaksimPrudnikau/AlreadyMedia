@@ -1,17 +1,19 @@
-using AlreadyMedia.Configs;
-using AlreadyMedia.Contexts;
-using AlreadyMedia.Services;
 using Core;
+using Core.Configs;
+using Core.Services;
 using EFCore.BulkExtensions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Options;
 
-namespace AlreadyMedia.Workers;
+namespace NasaClientService;
 
 public class NasaDatasetWorker(
     IServiceProvider services,
     ILogger<NasaDatasetWorker> logger,
-    IOptions<NasaDatasetConfig> options
-    ) : BackgroundService
+    IOptions<NasaDatasetConfig> options,
+    INasaBackgroundService nasaService
+) : BackgroundService
 {
 
     protected async override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -30,14 +32,11 @@ public class NasaDatasetWorker(
         try
         {
             await using var scope = services.CreateAsyncScope();
-            var nasaClient = scope.ServiceProvider.GetRequiredService<INasaDatasetClient>();
-            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            
-            var dataset = await nasaClient.GetDatasetAsync();
-            await dbContext.BulkInsertOrUpdateAsync(dataset);
-            await dbContext.BulkSaveChangesAsync();
 
-            logger.LogInformation("Successfully synced {count} NASA images", dataset.Count);
+            var result = await nasaService.UpsertDatasetsAsync();
+
+            logger.LogInformation("Successfully added {count} NASA images", result.added);
+            logger.LogInformation("Successfully removed {count} NASA images", result.removed);
         }
         catch (Exception ex)
         {

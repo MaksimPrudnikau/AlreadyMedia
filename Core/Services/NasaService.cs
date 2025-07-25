@@ -20,12 +20,11 @@ public class NasaService(AppDbContext dbContext, INasaCacheService cacheService)
             return cached;
         }
 
-        double totalItemsCount = await BuildQueryFromFilters(request).CountAsync();
-        var totalPages = (int)Math.Ceiling(totalItemsCount / request.ItemsPerPage);
-
         var query = BuildQueryFromFilters(request)
-            .ApplyPagination(request)
             .GroupBy(x => x.Year);
+
+        double totalGroupsCount = await query.CountAsync();
+        var totalPages = (int)Math.Ceiling(totalGroupsCount / request.ItemsPerPage);
 
         var groupedDataset = await query
             .Select(x => new NasaDatasetGroupedModel
@@ -34,6 +33,7 @@ public class NasaService(AppDbContext dbContext, INasaCacheService cacheService)
                 Count = x.Count(),
                 Mass = x.Average(item => item.Mass ?? 0)
             })
+            .ApplyPagination(request)
             .OrderBy(x => x.Year)
             .ToListAsync();
 

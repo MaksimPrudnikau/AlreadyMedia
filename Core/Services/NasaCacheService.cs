@@ -7,23 +7,23 @@ namespace Core.Services;
 
 public interface INasaCacheService
 {
-    IList<NasaDatasetListResponse>? Get(NasaDatasetListRequest request);
-    void Save(NasaDatasetListRequest request, IEnumerable<NasaDatasetListResponse> set);
+    NasaDatasetListResponse? Get(NasaDatasetListRequest request);
+    void Save(NasaDatasetListRequest request, NasaDatasetListResponse response);
 
 }
 
 public class NasaCacheService(IMemoryCache cache, IOptions<NasaDatasetConfig> options): INasaCacheService
 {
-    public IList<NasaDatasetListResponse>? Get(NasaDatasetListRequest request)
+    public NasaDatasetListResponse? Get(NasaDatasetListRequest request)
     {
         var key = BuildKey(request);
         
-        cache.TryGetValue<List<NasaDatasetListResponse>>(key, out var value);
+        cache.TryGetValue<NasaDatasetListResponse>(key, out var value);
 
         return value;
     }
 
-    public void Save(NasaDatasetListRequest request, IEnumerable<NasaDatasetListResponse> set)
+    public void Save(NasaDatasetListRequest request, NasaDatasetListResponse set)
     {
         var key = BuildKey(request);
         var cacheOptions = new MemoryCacheEntryOptions()

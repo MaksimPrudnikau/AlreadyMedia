@@ -1,9 +1,6 @@
-using Core;
 using Core.Models;
 using Core.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace AlreadyMedia.Controllers;
 

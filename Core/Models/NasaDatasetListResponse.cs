@@ -2,7 +2,6 @@ namespace Core.Models;
 
 public class NasaDatasetListResponse
 {
-    public DateTime? Year { get; init; }
-    public int Count { get; init; }
-    public double Mass { get; init; }
+    public required PaginationModel Pagination { get; init; }
+    public required IEnumerable<NasaDatasetGroupedModel> Dataset { get; init; }
 }

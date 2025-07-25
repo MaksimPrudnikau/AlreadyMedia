@@ -5,3 +5,4 @@ riderModule.iml
 /_ReSharper.Caches/
 /Console/Console.csproj
 /Console/Program.cs
+/Frontend/package-lock.json

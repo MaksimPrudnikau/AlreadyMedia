@@ -27,7 +27,7 @@ public class NasaDatasetWorker(
 
     private async Task UpdateDataset()
     {
-        // logger.LogInformation("Starting NASA data sync at: {time}", DateTimeOffset.Now);
+        logger.LogInformation("Starting NASA data sync at: {time}", DateTimeOffset.Now);
 
         try
         {

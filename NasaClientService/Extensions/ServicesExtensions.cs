@@ -1,3 +1,6 @@
+using Core.Configs;
+using Core.Services;
+
 namespace NasaClientService.Extensions;
 
 public static class ServicesExtensions
@@ -12,7 +15,8 @@ public static class ServicesExtensions
         
         AddHttpClient(services);
 
-        services.AddSingleton<INasaDatasetClient, NasaDatasetClient>();
+        services.AddSingleton<INasaHttpClient, NasaHttpClient>();
+        services.AddSingleton<INasaBackgroundService, NasaBackgroundService>();
 
 
         services.AddHostedService<NasaDatasetWorker>();

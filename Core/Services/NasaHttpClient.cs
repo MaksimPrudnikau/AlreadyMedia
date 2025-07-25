@@ -1,16 +1,16 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Core;
+using Core.Configs;
 using Microsoft.Extensions.Options;
 
-namespace NasaClientService;
+namespace Core.Services;
 
-public interface INasaDatasetClient
+public interface INasaHttpClient
 {
     Task<ICollection<NasaDataset>> GetDatasetAsync();
 }
 
-public class NasaDatasetClient(HttpClient httpClient, IOptions<NasaDatasetConfig> options) : INasaDatasetClient
+public class NasaHttpClient(HttpClient httpClient, IOptions<NasaDatasetConfig> options) : INasaHttpClient
 {
 
     private readonly static JsonSerializerOptions JsonSerializerOptions = new()
@@ -30,6 +30,7 @@ public class NasaDatasetClient(HttpClient httpClient, IOptions<NasaDatasetConfig
         {
             var connection = options.Value.SourceUrl;
             
+            // TODO: Доделать Retry
             var response = await httpClient.GetAsync(connection);
             response.EnsureSuccessStatusCode();
             

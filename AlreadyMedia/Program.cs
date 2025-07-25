@@ -1,4 +1,5 @@
 using Core;
+using Core.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<AppDbContext>();
+builder.Services.AddHttpClient<INasaHttpClient, NasaHttpClient>();
+builder.Services.AddTransient<INasaBackgroundService, NasaBackgroundService>();
+
+builder.Services.AddMemoryCache();
 
 builder.Services.AddControllers();
 

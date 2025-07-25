@@ -1,4 +1,4 @@
-namespace NasaClientService;
+namespace Core.Configs;
 
 public class NasaDatasetConfig
 {

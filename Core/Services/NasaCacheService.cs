@@ -1,0 +1,45 @@
+using Core.Configs;
+using Core.Models;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
+
+namespace Core.Services;
+
+interface INasaCacheService
+{
+    IList<NasaDatasetListResponse>? Get(NasaDatasetListRequest request);
+    void Save(NasaDatasetListRequest request, IEnumerable<NasaDatasetListResponse> set);
+
+}
+
+public class NasaCacheService(IMemoryCache cache, IOptions<NasaDatasetConfig> options): INasaCacheService
+{
+    public IList<NasaDatasetListResponse>? Get(NasaDatasetListRequest request)
+    {
+        var key = BuildKey(request);
+        
+        return cache.TryGetValue<List<NasaDatasetListResponse>>(key, out var value) ? value : [];
+    }
+
+    public void Save(NasaDatasetListRequest request, IEnumerable<NasaDatasetListResponse> set)
+    {
+        var key = BuildKey(request);
+        var cacheOptions = new MemoryCacheEntryOptions()
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(options.Value.SyncIntervalSeconds)
+        };
+        
+        cache.Set(key, set, cacheOptions);
+    }
+
+    private static string BuildKey(NasaDatasetListRequest request)
+    {
+        return string.Join("&",
+            $"{nameof(request.FromYear)}=${request.FromYear}",
+            $"{nameof(request.ToYear)}=${request.ToYear}",
+            $"{nameof(request.RecClass)}=${request.RecClass}",
+            $"{nameof(request.Page)}=${request.Page}",
+            $"{nameof(request.ItemsPerPage)}=${request.ItemsPerPage}"
+        );
+    }
+}

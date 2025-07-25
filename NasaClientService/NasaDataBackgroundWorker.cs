@@ -1,5 +1,9 @@
 using Core;
+using Core.Configs;
+using Core.Services;
 using EFCore.BulkExtensions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Options;
 
 namespace NasaClientService;
@@ -8,7 +12,7 @@ public class NasaDatasetWorker(
     IServiceProvider services,
     ILogger<NasaDatasetWorker> logger,
     IOptions<NasaDatasetConfig> options,
-    INasaDatasetClient nasaClient
+    INasaBackgroundService nasaService
 ) : BackgroundService
 {
 
@@ -23,19 +27,16 @@ public class NasaDatasetWorker(
 
     private async Task UpdateDataset()
     {
-        logger.LogInformation("Starting NASA data sync at: {time}", DateTimeOffset.Now);
+        // logger.LogInformation("Starting NASA data sync at: {time}", DateTimeOffset.Now);
 
         try
         {
             await using var scope = services.CreateAsyncScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            
-            var dataset = await nasaClient.GetDatasetAsync();
-            
-            await dbContext.BulkInsertOrUpdateAsync(dataset);
-            await dbContext.BulkSaveChangesAsync();
 
-            logger.LogInformation("Successfully synced {count} NASA images", dataset.Count);
+            var result = await nasaService.UpsertDatasetsAsync();
+
+            logger.LogInformation("Successfully added {count} NASA images", result.added);
+            logger.LogInformation("Successfully removed {count} NASA images", result.removed);
         }
         catch (Exception ex)
         {

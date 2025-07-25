@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace Core.Services;
 
-interface INasaCacheService
+public interface INasaCacheService
 {
     IList<NasaDatasetListResponse>? Get(NasaDatasetListRequest request);
     void Save(NasaDatasetListRequest request, IEnumerable<NasaDatasetListResponse> set);
@@ -18,7 +18,9 @@ public class NasaCacheService(IMemoryCache cache, IOptions<NasaDatasetConfig> op
     {
         var key = BuildKey(request);
         
-        return cache.TryGetValue<List<NasaDatasetListResponse>>(key, out var value) ? value : [];
+        cache.TryGetValue<List<NasaDatasetListResponse>>(key, out var value);
+
+        return value;
     }
 
     public void Save(NasaDatasetListRequest request, IEnumerable<NasaDatasetListResponse> set)

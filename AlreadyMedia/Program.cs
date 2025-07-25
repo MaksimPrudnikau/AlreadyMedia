@@ -9,6 +9,9 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<AppDbContext>();
 builder.Services.AddHttpClient<INasaHttpClient, NasaHttpClient>();
+
+builder.Services.AddTransient<INasaCacheService, NasaCacheService>();
+builder.Services.AddTransient<INasaService, NasaService>();
 builder.Services.AddTransient<INasaBackgroundService, NasaBackgroundService>();
 
 builder.Services.AddMemoryCache();

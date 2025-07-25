@@ -8,7 +8,7 @@ public interface INasaService
     Task<ICollection<NasaDatasetListResponse>> GetFilteredDatasetListResponse(NasaDatasetListRequest request);
 }
 
-public class NasaService(AppDbContext dbContext, NasaCacheService cacheService): INasaService
+public class NasaService(AppDbContext dbContext, INasaCacheService cacheService): INasaService
 {
     public async Task<ICollection<NasaDatasetListResponse>> GetFilteredDatasetListResponse(NasaDatasetListRequest request)
     {

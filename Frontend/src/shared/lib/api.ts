@@ -31,7 +31,11 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            "text/plain": components["schemas"]["NasaDatasetListResponse"];
+            "application/json": components["schemas"]["NasaDatasetListResponse"];
+            "text/json": components["schemas"]["NasaDatasetListResponse"];
+          };
         };
       };
     };
@@ -46,7 +50,24 @@ export interface paths {
 }
 export type webhooks = Record<string, never>;
 export interface components {
-  schemas: never;
+  schemas: {
+    NasaDatasetGroupedModel: {
+      /** Format: date-time */
+      year?: string | null;
+      /** Format: int32 */
+      count?: number;
+      /** Format: double */
+      mass?: number;
+    };
+    NasaDatasetListResponse: {
+      pagination: components["schemas"]["PaginationModel"];
+      dataset: components["schemas"]["NasaDatasetGroupedModel"][];
+    };
+    PaginationModel: {
+      /** Format: int32 */
+      totalPages?: number;
+    };
+  };
   responses: never;
   parameters: never;
   requestBodies: never;

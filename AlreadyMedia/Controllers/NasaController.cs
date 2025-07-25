@@ -10,6 +10,7 @@ public class NasaController (INasaService nasaService): ControllerBase
 {
     
     [HttpGet("dataset")]
+    [ProducesResponseType<NasaDatasetListResponse>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetDataset([FromQuery] NasaDatasetListRequest request)
     {
         return Ok(await nasaService.GetFilteredDatasetListResponse(request));

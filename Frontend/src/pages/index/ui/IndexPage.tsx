@@ -5,7 +5,9 @@ import { client } from "@/shared/api/client.ts";
 import { NasaTable } from "@/pages/index/ui";
 
 export function IndexPage() {
-  const [filters, setFilters] = useState<NasaDatasetFilters>({});
+  const [filters, setFilters] = useState<NasaDatasetFilters>({
+    ItemsPerPage: 20,
+  });
 
   const { data, isFetching } = useQuery({
     queryKey: ["dataset", filters],
@@ -43,7 +45,8 @@ export function IndexPage() {
   };
 
   return (
-    <div className={"text-2xl font-bold"}>
+    <div className={"p-5"}>
+      <div>Количество строк на одной странице: {filters!.ItemsPerPage}</div>
       {!data && isFetching ? (
         <div>Загрузка данных...</div>
       ) : (
@@ -51,8 +54,8 @@ export function IndexPage() {
           response={data}
           onNextPage={onNextPage}
           onPrevPage={onPrevPage}
-          currentPage={(filters?.Page ?? 0) + 1}
           isLoading={isFetching}
+          filters={filters}
         />
       )}
     </div>

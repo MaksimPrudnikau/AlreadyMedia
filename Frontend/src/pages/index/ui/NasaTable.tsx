@@ -1,4 +1,8 @@
-import { NasaDataset, NasaDatasetListResponse } from "@/pages/index";
+import {
+  NasaDataset,
+  NasaDatasetFilters,
+  NasaDatasetListResponse,
+} from "@/pages/index";
 import {
   ColumnDef,
   flexRender,
@@ -25,8 +29,8 @@ type Props = {
   response?: NasaDatasetListResponse;
   onNextPage: () => void;
   onPrevPage: () => void;
-  currentPage: number;
   isLoading: boolean;
+  filters: NasaDatasetFilters;
 };
 
 export function NasaTable(props: Props) {
@@ -76,6 +80,7 @@ export function NasaTable(props: Props) {
     },
     manualPagination: true,
     pageCount: totalPages,
+    rowCount: props.filters!.ItemsPerPage,
   });
 
   const [loadingButton, setLoadingButton] = useState<"prev" | "next" | null>(
@@ -92,10 +97,12 @@ export function NasaTable(props: Props) {
     props.onPrevPage();
   };
 
+  const currentPage = (props.filters?.Page ?? 0) + 1;
+
   return (
     <div className="p-5 w-full flex items-center justify-center text-[1rem] flex-col gap-2">
-      <Table>
-        <TableHeader>
+      <Table className={"w-full overflow-scroll h-full"}>
+        <TableHeader className={"sticky"}>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
@@ -103,7 +110,7 @@ export function NasaTable(props: Props) {
                   <TableHead
                     key={header.id}
                     colSpan={header.colSpan}
-                    className={"p-2 text-center w-[20rem]"}
+                    className={"p-2 text-center w-[20rem] font-bold"}
                   >
                     {header.isPlaceholder ? null : (
                       <div
@@ -135,47 +142,42 @@ export function NasaTable(props: Props) {
             </TableRow>
           ))}
         </TableHeader>
-        <TableBody>
-          {table
-            .getRowModel()
-            .rows.slice(0, 10)
-            .map((row) => {
-              return (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map((cell) => {
-                    return (
-                      <TableCell key={cell.id} className={"p-2 text-center"}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
-                    );
-                  })}
-                </TableRow>
-              );
-            })}
+        <TableBody className={"font-normal"}>
+          {table.getRowModel().rows.map((row) => {
+            return (
+              <TableRow key={row.id}>
+                {row.getVisibleCells().map((cell) => {
+                  return (
+                    <TableCell key={cell.id} className={"p-2 text-center"}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  );
+                })}
+              </TableRow>
+            );
+          })}
         </TableBody>
         <TableFooter>
           <TableRow>
             <TableCell>
               <div className="flex justify-end items-center gap-4">
                 <span>
-                  Страница {props.currentPage} из {totalPages}
+                  Страница {currentPage} из {totalPages}
                 </span>
                 <div className="flex gap-3">
                   <Button
                     onClick={onPrevPageClick}
-                    disabled={props.isLoading || props.currentPage < 2}
+                    disabled={props.isLoading || currentPage < 2}
                     loading={props.isLoading && loadingButton === "prev"}
                   >
                     Назад
                   </Button>
                   <Button
                     onClick={onNextPageClick}
-                    disabled={
-                      props.isLoading || props.currentPage === totalPages
-                    }
+                    disabled={props.isLoading || currentPage === totalPages}
                     loading={props.isLoading && loadingButton === "next"}
                   >
                     Вперед

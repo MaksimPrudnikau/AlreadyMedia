@@ -24,6 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/ui";
+import { VscFilter } from "react-icons/vsc";
 
 type Props = {
   response?: NasaDatasetListResponse;
@@ -120,6 +121,9 @@ export function NasaTable(props: Props) {
                         <div
                           className={"flex items-center justify-center gap-2"}
                         >
+                          <div>
+                            <VscFilter />
+                          </div>
                           {flexRender(
                             header.column.columnDef.header,
                             header.getContext(),

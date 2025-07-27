@@ -5,3 +5,6 @@ export type NasaDatasetFilters =
 
 export type NasaDataset =
   components["schemas"]["NasaDatasetListResponse"]["dataset"][0];
+
+export type NasaDatasetListResponse =
+  components["schemas"]["NasaDatasetListResponse"];

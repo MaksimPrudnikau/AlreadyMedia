@@ -1,13 +1,11 @@
-import { useState } from "react";
-import { NasaDatasetFilters } from "@/pages/index";
+import { useContext } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { client } from "@/shared/api/client.ts";
 import { NasaTable } from "@/pages/index/ui";
+import { tableContext } from "@/pages/index/lib/table-context.ts";
 
 export function IndexPage() {
-  const [filters, setFilters] = useState<NasaDatasetFilters>({
-    ItemsPerPage: 20,
-  });
+  const { filters } = useContext(tableContext);
 
   const { data, isFetching } = useQuery({
     queryKey: ["dataset", filters],
@@ -27,36 +25,16 @@ export function IndexPage() {
     placeholderData: (data) => data,
   });
 
-  const onNextPage = () => {
-    setFilters((f) => ({ ...f, Page: (f?.Page ?? 0) + 1 }));
-  };
-
-  const onPrevPage = () => {
-    setFilters((f) => {
-      if (!f?.Page) {
-        return f;
-      }
-      if (f.Page - 1 < 0) {
-        return f;
-      }
-
-      return { ...f, Page: (f?.Page ?? 0) - 1 };
-    });
-  };
-
   return (
     <div className={"p-5"}>
-      <div>Количество строк на одной странице: {filters!.ItemsPerPage}</div>
+      <div>
+        Количество строк на одной странице:{" "}
+        {filters?.ItemsPerPage ?? data?.dataset.length}
+      </div>
       {!data && isFetching ? (
         <div>Загрузка данных...</div>
       ) : (
-        <NasaTable
-          response={data}
-          onNextPage={onNextPage}
-          onPrevPage={onPrevPage}
-          isLoading={isFetching}
-          filters={filters}
-        />
+        <NasaTable response={data} isLoading={isFetching} />
       )}
     </div>
   );

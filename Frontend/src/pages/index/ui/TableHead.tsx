@@ -30,7 +30,7 @@ export function TableHeader({ table }: Props) {
                     onClick={header.column.getToggleSortingHandler()}
                   >
                     <div className={"flex items-center justify-center gap-2"}>
-                      <YearFilter />
+                      {header.id === "year" ? <YearFilter /> : null}
                       {flexRender(
                         header.column.columnDef.header,
                         header.getContext(),

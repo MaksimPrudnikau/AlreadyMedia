@@ -4,75 +4,76 @@
  */
 
 export interface paths {
-  "/Nasa/dataset": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: {
-      parameters: {
-        query?: {
-          FromYear?: number;
-          ToYear?: number;
-          RecClass?: string;
-          Page?: number;
-          ItemsPerPage?: number;
+    "/Nasa/dataset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description OK */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "text/plain": components["schemas"]["NasaDatasetListResponse"];
-            "application/json": components["schemas"]["NasaDatasetListResponse"];
-            "text/json": components["schemas"]["NasaDatasetListResponse"];
-          };
+        get: {
+            parameters: {
+                query?: {
+                    FromYear?: number;
+                    ToYear?: number;
+                    RecClass?: string;
+                    Page?: number;
+                    ItemsPerPage?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["NasaDatasetListResponse"];
+                        "application/json": components["schemas"]["NasaDatasetListResponse"];
+                        "text/json": components["schemas"]["NasaDatasetListResponse"];
+                    };
+                };
+            };
         };
-      };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-  schemas: {
-    NasaDatasetGroupedModel: {
-      /** Format: date-time */
-      year?: string | null;
-      /** Format: int32 */
-      count?: number;
-      /** Format: double */
-      mass?: number;
+    schemas: {
+        NasaDatasetGroupedModel: {
+            /** Format: int32 */
+            year?: number | null;
+            /** Format: int32 */
+            count?: number;
+            /** Format: double */
+            mass?: number;
+        };
+        NasaDatasetListResponse: {
+            pagination: components["schemas"]["PaginationModel"];
+            dataset: components["schemas"]["NasaDatasetGroupedModel"][];
+            recClasses: string[];
+        };
+        PaginationModel: {
+            /** Format: int32 */
+            totalPages?: number;
+        };
     };
-    NasaDatasetListResponse: {
-      pagination: components["schemas"]["PaginationModel"];
-      dataset: components["schemas"]["NasaDatasetGroupedModel"][];
-    };
-    PaginationModel: {
-      /** Format: int32 */
-      totalPages?: number;
-    };
-  };
-  responses: never;
-  parameters: never;
-  requestBodies: never;
-  headers: never;
-  pathItems: never;
+    responses: never;
+    parameters: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
 export type $defs = Record<string, never>;
 export type operations = Record<string, never>;

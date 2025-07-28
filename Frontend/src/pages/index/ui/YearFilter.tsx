@@ -13,19 +13,32 @@ import { tableContext } from "@/pages/index/lib/table-context.ts";
 export function YearFilter() {
   const { filters, updateFilters } = useContext(tableContext);
   const [menuOpened, setMenuOpened] = useState(false);
-  const [fromYear, setFromYear] = useState(filters?.FromYear);
-  const [toYear, setToYear] = useState(filters?.ToYear);
+  const [fromYear, setFromYear] = useState(filters?.FromYear?.toString() ?? "");
+  const [toYear, setToYear] = useState(filters?.ToYear?.toString() ?? "");
 
-  const onFormSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const onFormSubmit = (e?: FormEvent<HTMLFormElement>) => {
+    e?.preventDefault();
+    e?.stopPropagation();
 
-    updateFilters((f) => ({ ...f, FromYear: fromYear, ToYear: toYear }));
+    updateFilters((f) => ({
+      ...f,
+      FromYear: fromYear ? +fromYear : undefined,
+      ToYear: toYear ? +toYear : undefined,
+    }));
     setMenuOpened(false);
   };
 
+  const onOpenChange = (next: boolean) => {
+    if (!next) {
+      onFormSubmit();
+      return;
+    }
+
+    setMenuOpened(true);
+  };
+
   return (
-    <DropdownMenu open={menuOpened} onOpenChange={setMenuOpened}>
+    <DropdownMenu open={menuOpened} onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button variant={"ghost"} className={"p-1"}>
           <VscFilter />
@@ -40,8 +53,9 @@ export function YearFilter() {
             name={"fromYear"}
             placeholder={"Начало"}
             value={fromYear}
+            allowClear={true}
             onChange={(e) => {
-              setFromYear(+e.target.value);
+              setFromYear(e.target.value);
             }}
           />
           <Input
@@ -51,17 +65,14 @@ export function YearFilter() {
             inputMode={"numeric"}
             placeholder={"Конец"}
             value={toYear}
-            onChange={(e) => setToYear(+e.target.value)}
+            allowClear={true}
+            onChange={(e) => setToYear(e.target.value)}
           />
           <div className={"w-full flex justify-end"}>
             <Button
               type={"submit"}
               variant={"secondary"}
-              disabled={
-                fromYear !== undefined &&
-                toYear !== undefined &&
-                fromYear > toYear
-              }
+              disabled={!!fromYear && !!toYear && fromYear > toYear}
             >
               <SaveIcon />
             </Button>

@@ -16,6 +16,7 @@ public static class ServicesExtensions
 
 
         services.AddRedis(configuration);
+        services.AddSingleton<IRedisCacheService, RedisCacheService>();
         
         services.AddDbContext<AppDbContext>();
         

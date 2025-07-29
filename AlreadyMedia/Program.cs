@@ -14,6 +14,7 @@ builder.Services.AddRedis(builder.Configuration);
 builder.Services.AddDbContext<AppDbContext>();
 builder.Services.AddHttpClient<INasaHttpClient, NasaHttpClient>();
 
+builder.Services.AddTransient<IRedisCacheService, RedisCacheService>();
 builder.Services.AddTransient<INasaCacheService, NasaCacheService>();
 builder.Services.AddTransient<INasaService, NasaService>();
 builder.Services.AddTransient<INasaBackgroundService, NasaBackgroundService>();

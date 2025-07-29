@@ -40,7 +40,7 @@ public class NasaService(AppDbContext dbContext, INasaCacheService cacheService)
             RecClasses = recClasses
         };
 
-        cacheService.Save(request, res);
+        await cacheService.SaveAsync(request, res);
 
         return res;
     }

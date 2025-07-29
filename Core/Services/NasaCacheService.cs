@@ -1,8 +1,5 @@
-using System.Text.Json;
 using Core.Configs;
 using Core.Models;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 
 namespace Core.Services;
@@ -10,35 +7,24 @@ namespace Core.Services;
 public interface INasaCacheService
 {
     Task<NasaDatasetListResponse?> GetAsync(NasaDatasetListRequest request, CancellationToken token);
-    void Save(NasaDatasetListRequest request, NasaDatasetListResponse response);
+    Task SaveAsync(NasaDatasetListRequest request, NasaDatasetListResponse response);
 
 }
 
-public class NasaCacheService(IDistributedCache cache, IOptions<NasaDatasetConfig> options): INasaCacheService
+public class NasaCacheService(IRedisCacheService cache, IOptions<NasaDatasetConfig> options): INasaCacheService
 {
     public async Task<NasaDatasetListResponse?> GetAsync(NasaDatasetListRequest request, CancellationToken token = default)
     {
         var key = BuildKey(request);
 
-        var value = await cache.GetStringAsync(key, token);
-        if (string.IsNullOrEmpty(value))
-        {
-            return null;
-        }
-        
-        return JsonSerializer.Deserialize<NasaDatasetListResponse?>(value);
+        return await cache.GetAsync<NasaDatasetListResponse?>(key, token);
     }
 
-    public void Save(NasaDatasetListRequest request, NasaDatasetListResponse set)
+    public async Task SaveAsync(NasaDatasetListRequest request, NasaDatasetListResponse set)
     {
         var key = BuildKey(request);
-        var cacheOptions = new DistributedCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(options.Value.SyncIntervalSeconds)
-        };
+        await cache.SetAsync(key, set);
 
-        var value = JsonSerializer.Serialize(set);
-        cache.SetStringAsync(key, value, cacheOptions);
     }
 
     private static string BuildKey(NasaDatasetListRequest request)

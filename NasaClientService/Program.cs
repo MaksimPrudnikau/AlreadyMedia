@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using NasaClientService.Extensions;
 
 var builder = Host.CreateApplicationBuilder(args);

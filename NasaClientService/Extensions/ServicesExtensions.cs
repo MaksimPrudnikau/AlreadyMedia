@@ -16,14 +16,14 @@ public static class ServicesExtensions
 
 
         services.AddRedis(configuration);
-        services.AddSingleton<IRedisCacheService, RedisCacheService>();
+        services.AddTransient<IRedisCacheService, RedisCacheService>();
         
         services.AddDbContext<AppDbContext>();
         
         AddHttpClient(services);
         
-        services.AddSingleton<INasaHttpClient, NasaHttpClient>();
-        services.AddSingleton<INasaBackgroundService, NasaBackgroundService>();
+        services.AddTransient<INasaHttpClient, NasaHttpClient>();
+        services.AddTransient<INasaBackgroundService, NasaBackgroundService>();
 
 
         services.AddHostedService<NasaDatasetWorker>();

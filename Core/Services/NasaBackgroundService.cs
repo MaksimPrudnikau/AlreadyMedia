@@ -48,6 +48,7 @@ public class NasaBackgroundService : INasaBackgroundService
     private async Task<IList<NasaDataset>> GetExistingDatasetsAsync(ICollection<int> remoteDatasetIds)
     {
         return await _appDbContext.NasaDbSet
+            .AsNoTracking()
             .Where(dataset => remoteDatasetIds.Contains(dataset.Id))
             .ToListAsync();
     }
@@ -56,6 +57,7 @@ public class NasaBackgroundService : INasaBackgroundService
     {
         var remoteDatasetIds = remoteDatasets.Keys.ToHashSet();
         var staleDatasets = await _appDbContext.NasaDbSet
+            .AsNoTracking()
             .Where(dataset => !remoteDatasetIds.Contains(dataset.Id))
             .ToListAsync();
 

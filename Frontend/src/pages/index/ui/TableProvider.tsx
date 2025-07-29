@@ -3,7 +3,9 @@ import { PropsWithChildren, useState } from "react";
 import { NasaDatasetFilters } from "@/pages/index";
 
 export function TableProvider({ children }: PropsWithChildren) {
-  const [filters, updateFilters] = useState<NasaDatasetFilters>({});
+  const [filters, updateFilters] = useState<NasaDatasetFilters>({
+    ItemsPerPage: 10,
+  });
 
   const onNextPage = () => {
     updateFilters((f) => ({ ...f, Page: (f?.Page ?? 0) + 1 }));

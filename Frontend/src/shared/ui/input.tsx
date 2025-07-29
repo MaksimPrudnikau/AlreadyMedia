@@ -1,48 +1,17 @@
-import React, { ComponentProps, ReactNode, useRef } from "react";
+import { ComponentProps, ReactNode } from "react";
 import { cn } from "@/shared/lib";
-import { MdOutlineClear } from "react-icons/md";
-import { Button } from "@/shared/ui/button.tsx";
 
 type Props = {
   leftIcon?: ReactNode;
-  allowClear?: boolean;
   loading?: boolean;
 } & ComponentProps<"input">;
 
 function Input(props: Props) {
-  const { className, type, allowClear, loading, ...rest } = props;
-
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const onClearClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    e.stopPropagation();
-    e.preventDefault();
-
-    // Создаем искусственное событие изменения
-    const event = {
-      target: {
-        value: "",
-        type: type || "text",
-        name: rest.name || "",
-      },
-      currentTarget: {
-        value: "",
-        type: type || "text",
-        name: rest.name || "",
-      },
-    } as React.ChangeEvent<HTMLInputElement>;
-
-    // Вызываем onChange если он передан
-    rest.onChange?.(event);
-
-    // Фокусируемся на инпуте после очистки
-    inputRef.current?.focus();
-  };
+  const { className, type, loading, ...rest } = props;
 
   return (
     <div className={cn("relative flex", loading ? "cursor-not-allowed " : "")}>
       <input
-        ref={inputRef}
         type={type}
         data-slot="input"
         className={cn(
@@ -50,23 +19,11 @@ function Input(props: Props) {
           "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
           "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive" +
             " disabled:bg-muted",
-          allowClear ? "pr-7" : "",
           className,
         )}
         {...rest}
         disabled={loading}
       />
-      {allowClear ? (
-        <Button
-          variant={"ghost"}
-          className={
-            "absolute right-2 top-1/2 -translate-y-1/2 transform text-gray-400 p-0 w-fit h-fit"
-          }
-          onClick={onClearClick}
-        >
-          <MdOutlineClear size={15} />
-        </Button>
-      ) : null}
     </div>
   );
 }

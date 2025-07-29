@@ -25,17 +25,17 @@ export function IndexPage() {
     placeholderData: (data) => data,
   });
 
+  if (!data && isFetching) {
+    return <div>Загрузка данных...</div>;
+  }
+
   return (
     <div className={"p-5"}>
-      <div>
-        Количество строк на одной странице:{" "}
-        {filters?.ItemsPerPage ?? data?.dataset.length}
+      <div className={"flex gap-1"}>
+        <div>Количество элементов на странице (по умолчанию):</div>
+        <div>{filters?.ItemsPerPage ?? data?.dataset.length}</div>
       </div>
-      {!data && isFetching ? (
-        <div>Загрузка данных...</div>
-      ) : (
-        <NasaTable response={data} isLoading={isFetching} />
-      )}
+      <NasaTable response={data} isLoading={isFetching} />
     </div>
   );
 }

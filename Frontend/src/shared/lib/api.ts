@@ -17,6 +17,7 @@ export interface paths {
                     FromYear?: number;
                     ToYear?: number;
                     RecClass?: string;
+                    NameContains?: string;
                     Page?: number;
                     ItemsPerPage?: number;
                 };

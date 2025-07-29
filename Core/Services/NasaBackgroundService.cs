@@ -1,4 +1,6 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,10 +14,10 @@ public interface INasaBackgroundService
 public class NasaBackgroundService : INasaBackgroundService
 {
     private readonly INasaHttpClient _nasaClient;
-    private readonly IMemoryCache _cacheService;
+    private readonly IDistributedCache _cacheService;
     private readonly AppDbContext _appDbContext;
 
-    public NasaBackgroundService(INasaHttpClient nasaClient, IServiceProvider serviceProvider, IMemoryCache cacheService)
+    public NasaBackgroundService(INasaHttpClient nasaClient, IServiceProvider serviceProvider, IDistributedCache cacheService)
     {
         _nasaClient = nasaClient;
         _cacheService = cacheService;
@@ -38,7 +40,8 @@ public class NasaBackgroundService : INasaBackgroundService
 
     private async Task<(int removed, int added)> SyncWithDatabaseAsync(IDictionary<int, NasaDataset> remoteDatasets)
     {
-        var isCached = _cacheService.TryGetValue<IList<NasaDataset>>("data", out var existingDatasets);
+        var existingDatasets = await GetFromCacheAsync();
+        var isCached = existingDatasets is not null;
         existingDatasets ??= await GetExistingDatasetsAsync(remoteDatasets.Keys);
         
         var removed = await RemoveStaleDatasetsAsync(remoteDatasets);
@@ -46,12 +49,24 @@ public class NasaBackgroundService : INasaBackgroundService
 
         if (!isCached || removed > 0 || added > 0)
         {
-            _cacheService.Set("data", existingDatasets);
+            var value = JsonSerializer.Serialize(existingDatasets);
+            await _cacheService.SetStringAsync("data", value);
         }
     
         await _appDbContext.SaveChangesAsync();
 
         return (removed, added);
+    }
+
+    private async Task<IList<NasaDataset>?> GetFromCacheAsync()
+    {
+        var value = await _cacheService.GetStringAsync("data");
+        if (string.IsNullOrEmpty(value))
+        {
+            return null;
+        }
+
+        return JsonSerializer.Deserialize<IList<NasaDataset>>(value);
     }
 
     private async Task<IList<NasaDataset>> GetExistingDatasetsAsync(ICollection<int> remoteDatasetIds)

@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Core.Services;
@@ -12,13 +11,11 @@ public interface INasaBackgroundService
 public class NasaBackgroundService : INasaBackgroundService
 {
     private readonly INasaHttpClient _nasaClient;
-    private readonly IMemoryCache _cacheService;
     private readonly AppDbContext _appDbContext;
 
-    public NasaBackgroundService(INasaHttpClient nasaClient, IServiceProvider serviceProvider, IMemoryCache cacheService)
+    public NasaBackgroundService(INasaHttpClient nasaClient, IServiceProvider serviceProvider)
     {
         _nasaClient = nasaClient;
-        _cacheService = cacheService;
 
         var scope = serviceProvider.CreateScope();
         _appDbContext = scope.ServiceProvider.GetService<AppDbContext>()!;
@@ -38,22 +35,16 @@ public class NasaBackgroundService : INasaBackgroundService
 
     private async Task<(int removed, int added)> SyncWithDatabaseAsync(IDictionary<int, NasaDataset> remoteDatasets)
     {
-        var isCached = _cacheService.TryGetValue<IList<NasaDataset>>("data", out var existingDatasets);
-        existingDatasets ??= await GetExistingDatasetsAsync(remoteDatasets.Keys);
+        var existingDatasets = await GetExistingDatasetsAsync(remoteDatasets.Keys);
         
         var removed = await RemoveStaleDatasetsAsync(remoteDatasets);
         var added = await AddNewDatasetsAsync(remoteDatasets, existingDatasets);
-
-        if (!isCached || removed > 0 || added > 0)
-        {
-            _cacheService.Set("data", existingDatasets);
-        }
     
         await _appDbContext.SaveChangesAsync();
 
         return (removed, added);
     }
-
+    
     private async Task<IList<NasaDataset>> GetExistingDatasetsAsync(ICollection<int> remoteDatasetIds)
     {
         return await _appDbContext.NasaDbSet

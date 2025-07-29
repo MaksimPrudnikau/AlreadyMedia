@@ -1,37 +1,36 @@
 using Core.Configs;
 using Core.Models;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 
 namespace Core.Services;
 
 public interface INasaCacheService
 {
-    NasaDatasetListResponse? Get(NasaDatasetListRequest request);
-    void Save(NasaDatasetListRequest request, NasaDatasetListResponse response);
+    Task<NasaDatasetListResponse?> GetAsync(NasaDatasetListRequest request, CancellationToken token);
+    Task SaveAsync(NasaDatasetListRequest request, NasaDatasetListResponse response);
 
 }
 
-public class NasaCacheService(IMemoryCache cache, IOptions<NasaDatasetConfig> options): INasaCacheService
+public class NasaCacheService(IRedisCacheService cache, IOptions<NasaDatasetConfig> options): INasaCacheService
 {
-    public NasaDatasetListResponse? Get(NasaDatasetListRequest request)
+    private readonly DistributedCacheEntryOptions _options = new()
+    {
+        AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(options.Value.SyncIntervalSeconds)
+    };
+    
+    public async Task<NasaDatasetListResponse?> GetAsync(NasaDatasetListRequest request, CancellationToken token = default)
     {
         var key = BuildKey(request);
-        
-        cache.TryGetValue<NasaDatasetListResponse>(key, out var value);
 
-        return value;
+        return await cache.GetAsync<NasaDatasetListResponse?>(key, token);
     }
 
-    public void Save(NasaDatasetListRequest request, NasaDatasetListResponse set)
+    public async Task SaveAsync(NasaDatasetListRequest request, NasaDatasetListResponse set)
     {
         var key = BuildKey(request);
-        var cacheOptions = new MemoryCacheEntryOptions()
-        {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(options.Value.SyncIntervalSeconds)
-        };
-        
-        cache.Set(key, set, cacheOptions);
+        await cache.SetAsync(key, set, _options);
+
     }
 
     private static string BuildKey(NasaDatasetListRequest request)

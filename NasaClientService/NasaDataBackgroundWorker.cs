@@ -1,9 +1,5 @@
-using Core;
 using Core.Configs;
 using Core.Services;
-using EFCore.BulkExtensions;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Options;
 
 namespace NasaClientService;

@@ -1,5 +1,6 @@
 using System.Configuration;
 using Core;
+using Core.Extensions;
 using Core.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,14 +9,15 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+builder.Services.AddRedis(builder.Configuration);
+
 builder.Services.AddDbContext<AppDbContext>();
 builder.Services.AddHttpClient<INasaHttpClient, NasaHttpClient>();
 
+builder.Services.AddTransient<IRedisCacheService, RedisCacheService>();
 builder.Services.AddTransient<INasaCacheService, NasaCacheService>();
 builder.Services.AddTransient<INasaService, NasaService>();
 builder.Services.AddTransient<INasaBackgroundService, NasaBackgroundService>();
-
-builder.Services.AddMemoryCache();
 
 builder.Services.AddControllers();
 

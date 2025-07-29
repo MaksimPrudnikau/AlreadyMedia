@@ -9,6 +9,7 @@
 
     <ItemGroup>
         <PackageReference Include="EFCore.BulkExtensions" Version="9.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.7" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.4"/>
     </ItemGroup>
 

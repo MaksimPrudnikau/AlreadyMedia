@@ -1,20 +1,22 @@
 using Core;
 using Core.Configs;
+using Core.Extensions;
 using Core.Services;
 
 namespace NasaClientService.Extensions;
 
 public static class ServicesExtensions
 {
-    public static void AddNasaServices(this IServiceCollection services, IConfiguration configuration)
+    public static void AddNasaServices(this IServiceCollection services, IConfigurationManager configuration)
     {
         var sectionName = configuration.GetSection("NasaDataset");
         services
             .AddOptions<NasaDatasetConfig>()
             .Bind(sectionName);
-        
-        
-        services.AddMemoryCache();
+
+
+        services.AddRedis(configuration);
+        services.AddSingleton<IRedisCacheService, RedisCacheService>();
         
         services.AddDbContext<AppDbContext>();
         

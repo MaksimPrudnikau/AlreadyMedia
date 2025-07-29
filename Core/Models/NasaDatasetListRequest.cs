@@ -16,6 +16,10 @@ public class NasaDatasetListRequest: PaginationRequest, IValidatableObject
     [StringLength(50, ErrorMessage = "The {0} cannot exceed {1} characters.")]
     public string? RecClass { get; init; }
     
+    [Display(Name = "Name Contains")]
+    [StringLength(100, ErrorMessage = "The {0} cannot exceed {1} characters.")]
+    public string? NameContains { get; init; }
+    
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (FromYear > ToYear)

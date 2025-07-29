@@ -41,7 +41,8 @@ public class NasaCacheService(IMemoryCache cache, IOptions<NasaDatasetConfig> op
             $"{nameof(request.ToYear)}=${request.ToYear}",
             $"{nameof(request.RecClass)}=${request.RecClass}",
             $"{nameof(request.Page)}=${request.Page}",
-            $"{nameof(request.ItemsPerPage)}=${request.ItemsPerPage}"
+            $"{nameof(request.ItemsPerPage)}=${request.ItemsPerPage}",
+            $"{nameof(request.NameContains)}=${request.NameContains}"
         );
     }
 }

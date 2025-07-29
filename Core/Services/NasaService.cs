@@ -13,7 +13,6 @@ public class NasaService(AppDbContext dbContext, INasaCacheService cacheService)
 {
     public async Task<NasaDatasetListResponse> GetFilteredDatasetListResponse(NasaDatasetListRequest request)
     {
-
         var cached = cacheService.Get(request);
         if (cached is not null)
         {
@@ -29,18 +28,27 @@ public class NasaService(AppDbContext dbContext, INasaCacheService cacheService)
         var groupedDataset = await query
             .Select(x => new NasaDatasetGroupedModel
             {
-                Year = x.Key,
+                Year = x.Key.HasValue ? x.Key.Value.Year : null,
                 Count = x.Count(),
                 Mass = x.Average(item => item.Mass ?? 0)
             })
-            .ApplyPagination(request)
             .OrderBy(x => x.Year)
+            .ApplyPagination(request)
+            .ToListAsync();
+
+        var str = query.ToQueryString();
+
+        var recClasses = await dbContext.NasaDbSet
+            .Where(x => x.RecClass != null)
+            .GroupBy(x => x.RecClass)
+            .Select(x => x.Key!)
             .ToListAsync();
 
         var res = new NasaDatasetListResponse
         {
             Pagination = new() { TotalPages = totalPages },
-            Dataset = groupedDataset
+            Dataset = groupedDataset,
+            RecClasses = recClasses
         };
 
         cacheService.Save(request, res);
@@ -70,7 +78,14 @@ public class NasaService(AppDbContext dbContext, INasaCacheService cacheService)
         {
             query = query
                 .Where(x => x.RecClass != null)
-                .Where(x => x.RecClass!.Equals(request.RecClass, StringComparison.InvariantCulture));
+                .Where(x => x.RecClass!.Equals(request.RecClass));
+        }
+
+        if (request.NameContains is not null)
+        {
+            query = query
+                .Where(x => x.Name != null)
+                .Where(x => x.Name!.Contains(request.NameContains));
         }
 
         return query;

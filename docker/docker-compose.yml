@@ -19,17 +19,15 @@ services:
       - redis
   
   worker:
-    image: ${DOCKER_REGISTRY-}api
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: NasaClientService/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__Postgres=User Id=postgres;Password=maksim2001;Server=postgres;Port=5432;Database=already-media;
       - ConnectionStrings__Redis=redis:6379
       - NasaDataset__SourceUrl=https://raw.githubusercontent.com/biggiko/nasa-dataset/refs/heads/main/y77d-th95.json
       - NasaDataset__SyncIntervalSeconds=30
-    command: ["dotnet", "YourProjectName.dll", "--role", "worker"]
     depends_on:
       - postgres
       - redis
@@ -49,17 +47,6 @@ services:
     image: redis:latest
     ports:
       - "6379:6379"
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    environment:
-      - VITE_API_URL=http://api:80
-    ports:
-      - "5173:5173"
-    depends_on:
-      - api
 
 volumes:
   postgres_data:

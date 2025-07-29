@@ -1,5 +1,6 @@
 using Core.Configs;
 using Core.Models;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 
 namespace Core.Services;
@@ -13,6 +14,11 @@ public interface INasaCacheService
 
 public class NasaCacheService(IRedisCacheService cache, IOptions<NasaDatasetConfig> options): INasaCacheService
 {
+    private readonly DistributedCacheEntryOptions _options = new()
+    {
+        AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(options.Value.SyncIntervalSeconds)
+    };
+    
     public async Task<NasaDatasetListResponse?> GetAsync(NasaDatasetListRequest request, CancellationToken token = default)
     {
         var key = BuildKey(request);
@@ -23,7 +29,7 @@ public class NasaCacheService(IRedisCacheService cache, IOptions<NasaDatasetConf
     public async Task SaveAsync(NasaDatasetListRequest request, NasaDatasetListResponse set)
     {
         var key = BuildKey(request);
-        await cache.SetAsync(key, set);
+        await cache.SetAsync(key, set, _options);
 
     }
 

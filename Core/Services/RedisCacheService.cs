@@ -1,27 +1,20 @@
 using System.Text.Json;
-using Core.Configs;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Options;
 
 namespace Core.Services;
 
 public interface IRedisCacheService
 {
     Task<T?> GetAsync<T>(string key, CancellationToken token = default);
-    Task SetAsync<T>(string key, T data, CancellationToken token = default);
+    Task SetAsync<T>(string key, T data, DistributedCacheEntryOptions? options = null, CancellationToken token = default);
 }
 
-public class RedisCacheService(IOptions<NasaDatasetConfig> config, IDistributedCache cache): IRedisCacheService
+public class RedisCacheService(IDistributedCache cache): IRedisCacheService
 {
-    private readonly DistributedCacheEntryOptions _options = new()
-    {
-        AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(config.Value.SyncIntervalSeconds)
-    };
-
-    public async Task SetAsync<T>(string key, T data, CancellationToken token = default)
+    public async Task SetAsync<T>(string key, T data, DistributedCacheEntryOptions? options = null, CancellationToken token = default)
     {
         var value = await Task.Run(() => JsonSerializer.Serialize(data), token);
-        await cache.SetStringAsync(key, value, _options, token);
+        await cache.SetStringAsync(key, value, options ?? new (), token);
     }
 
     public async Task<T?> GetAsync<T>(string key, CancellationToken token = default)

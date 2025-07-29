@@ -11,13 +11,11 @@ public interface INasaBackgroundService
 public class NasaBackgroundService : INasaBackgroundService
 {
     private readonly INasaHttpClient _nasaClient;
-    private readonly IRedisCacheService _cacheService;
     private readonly AppDbContext _appDbContext;
 
-    public NasaBackgroundService(INasaHttpClient nasaClient, IServiceProvider serviceProvider, IRedisCacheService cacheService)
+    public NasaBackgroundService(INasaHttpClient nasaClient, IServiceProvider serviceProvider)
     {
         _nasaClient = nasaClient;
-        _cacheService = cacheService;
 
         var scope = serviceProvider.CreateScope();
         _appDbContext = scope.ServiceProvider.GetService<AppDbContext>()!;
@@ -37,17 +35,10 @@ public class NasaBackgroundService : INasaBackgroundService
 
     private async Task<(int removed, int added)> SyncWithDatabaseAsync(IDictionary<int, NasaDataset> remoteDatasets)
     {
-        var existingDatasets = await _cacheService.GetAsync<IList<NasaDataset>?>("data");
-        var isCached = existingDatasets is not null;
-        existingDatasets ??= await GetExistingDatasetsAsync(remoteDatasets.Keys);
+        var existingDatasets = await GetExistingDatasetsAsync(remoteDatasets.Keys);
         
         var removed = await RemoveStaleDatasetsAsync(remoteDatasets);
         var added = await AddNewDatasetsAsync(remoteDatasets, existingDatasets);
-
-        if (!isCached || removed > 0 || added > 0)
-        {
-            await _cacheService.SetAsync("data", existingDatasets);
-        }
     
         await _appDbContext.SaveChangesAsync();
 

@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		docker-compose.yaml = docker-compose.yaml
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Frontend", "Frontend\Frontend.csproj", "{6908A15D-44C2-47E6-8BB1-B0A32D5DB57E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,8 +31,9 @@ Global
 		{4D5F464C-4B2B-4912-ACE9-CC211E38EAD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4D5F464C-4B2B-4912-ACE9-CC211E38EAD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4D5F464C-4B2B-4912-ACE9-CC211E38EAD6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6EE891B7-F7DE-4CB4-9B15-5711E3391E1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6EE891B7-F7DE-4CB4-9B15-5711E3391E1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6EE891B7-F7DE-4CB4-9B15-5711E3391E1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6908A15D-44C2-47E6-8BB1-B0A32D5DB57E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6908A15D-44C2-47E6-8BB1-B0A32D5DB57E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6908A15D-44C2-47E6-8BB1-B0A32D5DB57E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6908A15D-44C2-47E6-8BB1-B0A32D5DB57E}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 	EndGlobalSection
 EndGlobal

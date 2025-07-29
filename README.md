@@ -1,7 +1,5 @@
 # NASA Meteorite Landings Service
 
-![Project Architecture](docs/architecture.png)
-
 ## 📌 Особенности
 
 - **Data Sync Service**: Настраиваемая автоматическая синхронизация с Retry-механизмом

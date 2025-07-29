@@ -1,6 +1,6 @@
-import { tableContext } from "@/pages/index/lib/table-context.ts";
+import { tableContext } from "@/widgets/nasa-table/lib";
 import { PropsWithChildren, useState } from "react";
-import { NasaDatasetFilters } from "@/pages/index";
+import { NasaDatasetFilters } from "@/widgets/nasa-table/api";
 
 export function TableProvider({ children }: PropsWithChildren) {
   const [filters, updateFilters] = useState<NasaDatasetFilters>({

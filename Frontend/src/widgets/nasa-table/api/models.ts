@@ -7,5 +7,3 @@ export type NasaDatasetListResponse =
   components["schemas"]["NasaDatasetListResponse"];
 
 export type NasaDataset = NasaDatasetListResponse["dataset"][0];
-
-export type Asd = components;

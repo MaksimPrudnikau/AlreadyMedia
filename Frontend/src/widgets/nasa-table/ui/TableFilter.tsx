@@ -7,8 +7,8 @@ import {
 } from "@/shared/ui";
 import { FormEvent, PropsWithChildren, useContext, useState } from "react";
 import { SaveIcon } from "lucide-react";
-import { tableContext } from "@/pages/index/lib/table-context.ts";
-import { NasaDatasetFilters } from "@/pages/index";
+import { tableContext } from "@/widgets/nasa-table/lib/";
+import { NasaDatasetFilters } from "@/widgets/nasa-table/api";
 
 type Props = {
   onChange: (oldFilters: NasaDatasetFilters) => NasaDatasetFilters;

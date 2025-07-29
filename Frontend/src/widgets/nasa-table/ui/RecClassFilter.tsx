@@ -8,7 +8,7 @@ import {
 } from "@/shared/ui";
 import { MdOutlineClear } from "react-icons/md";
 import { useContext } from "react";
-import { tableContext } from "@/pages/index/lib/table-context.ts";
+import { tableContext } from "@/widgets/nasa-table/lib";
 
 type Props = {
   classes: string[];

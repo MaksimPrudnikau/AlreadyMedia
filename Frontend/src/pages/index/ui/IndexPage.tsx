@@ -1,29 +1,12 @@
 import { useContext } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { client } from "@/shared/api/client.ts";
-import { NasaTable } from "@/pages/index/ui";
-import { tableContext } from "@/pages/index/lib/table-context.ts";
+import { tableContext } from "@/widgets/nasa-table/lib";
+import { NasaTable } from "@/widgets/nasa-table";
+import { useDatasetQuery } from "@/pages/index/api";
 
 export function IndexPage() {
   const { filters } = useContext(tableContext);
 
-  const { data, isFetching } = useQuery({
-    queryKey: ["dataset", filters],
-    queryFn: async () => {
-      const { data, error } = await client.GET("/Nasa/dataset", {
-        params: {
-          query: filters,
-        },
-      });
-
-      if (error) {
-        throw new Error(error);
-      }
-
-      return data;
-    },
-    placeholderData: (data) => data,
-  });
+  const { data, isFetching } = useDatasetQuery(filters);
 
   if (!data && isFetching) {
     return <div>Загрузка данных...</div>;

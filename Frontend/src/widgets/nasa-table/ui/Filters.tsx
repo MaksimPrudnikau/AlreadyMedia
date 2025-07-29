@@ -1,4 +1,4 @@
-import { NameLikeFilter, RecClassFilter } from "@/pages/index/ui";
+import { NameLikeFilter, RecClassFilter } from "@/widgets/nasa-table/ui";
 
 type Props = {
   recClasses: string[];

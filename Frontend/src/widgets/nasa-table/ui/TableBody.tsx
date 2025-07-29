@@ -1,6 +1,6 @@
 import { TableBody as UITableBody, TableCell, TableRow } from "@/shared/ui";
 import { flexRender, Table } from "@tanstack/react-table";
-import { NasaDataset } from "@/pages/index";
+import { NasaDataset } from "@/widgets/nasa-table/api";
 
 type Props = {
   table: Table<NasaDataset>;

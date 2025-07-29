@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import { NasaDatasetFilters } from "@/pages/index";
+import { NasaDatasetFilters } from "@/widgets/nasa-table/api";
 
 export type TableContext = {
   filters: NasaDatasetFilters;

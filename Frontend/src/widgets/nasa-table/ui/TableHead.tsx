@@ -6,7 +6,8 @@ import {
 import { flexRender, Table } from "@tanstack/react-table";
 import { FaCaretDown, FaCaretUp } from "react-icons/fa6";
 import { TbCaretUpDownFilled } from "react-icons/tb";
-import { NasaDataset, YearFilter } from "@/pages/index";
+import { NasaDataset } from "@/widgets/nasa-table/api";
+import { YearFilter } from "@/widgets/nasa-table/ui";
 
 type Props = {
   table: Table<NasaDataset>;

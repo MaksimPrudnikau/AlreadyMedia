@@ -1,8 +1,8 @@
 import { Input } from "@/shared/ui";
 import React, { useContext, useState } from "react";
-import { TableFilter } from "@/pages/index/ui/TableFilter.tsx";
-import { NasaDatasetFilters } from "@/pages/index";
-import { tableContext } from "@/pages/index/lib/table-context.ts";
+import { tableContext } from "@/widgets/nasa-table/lib";
+import { NasaDatasetFilters } from "@/widgets/nasa-table/api";
+import { TableFilter } from "@/widgets/nasa-table/ui";
 
 export function YearFilter() {
   const { filters } = useContext(tableContext);

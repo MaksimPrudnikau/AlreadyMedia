@@ -1,7 +1,7 @@
 import { Button, Input } from "@/shared/ui";
 import { ChangeEvent, FormEvent, useContext, useState } from "react";
-import { tableContext } from "@/pages/index/lib/table-context.ts";
 import { CiSearch } from "react-icons/ci";
+import { tableContext } from "@/widgets/nasa-table/lib";
 
 export function NameLikeFilter() {
   const { filters, updateFilters } = useContext(tableContext);

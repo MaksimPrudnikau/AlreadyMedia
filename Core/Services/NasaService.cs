@@ -25,18 +25,7 @@ public class NasaService(AppDbContext dbContext, INasaCacheService cacheService)
         double totalGroupsCount = await query.CountAsync();
         var totalPages = (int)Math.Ceiling(totalGroupsCount / request.ItemsPerPage);
 
-        var groupedDataset = await query
-            .Select(x => new NasaDatasetGroupedModel
-            {
-                Year = x.Key.HasValue ? x.Key.Value.Year : null,
-                Count = x.Count(),
-                Mass = x.Average(item => item.Mass ?? 0)
-            })
-            .OrderBy(x => x.Year)
-            .ApplyPagination(request)
-            .ToListAsync();
-
-        var str = query.ToQueryString();
+        var groupedDataset = await GetGroupedDatasetAsync(query, request);
 
         var recClasses = await dbContext.NasaDbSet
             .Where(x => x.RecClass != null)
@@ -89,5 +78,19 @@ public class NasaService(AppDbContext dbContext, INasaCacheService cacheService)
         }
 
         return query;
+    }
+
+    private async static Task<IEnumerable<NasaDatasetGroupedModel>> GetGroupedDatasetAsync(IQueryable<IGrouping<DateTime?,NasaDataset>> query, NasaDatasetListRequest request)
+    {
+        return await query
+            .Select(x => new NasaDatasetGroupedModel
+            {
+                Year = x.Key.HasValue ? x.Key.Value.Year : null,
+                Count = x.Count(),
+                Mass = x.Average(item => item.Mass ?? 0)
+            })
+            .OrderBy(x => x.Year)
+            .ApplyPagination(request)
+            .ToListAsync();
     }
 }

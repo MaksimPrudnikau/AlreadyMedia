@@ -47,18 +47,9 @@ export function YearFilter() {
     setMenuOpened(false);
   };
 
-  const onOpenChange = (next: boolean) => {
-    if (!next && !form.formState.isValid) {
-      form.reset();
-      setMenuOpened(next);
-    }
-
-    setMenuOpened(next);
-  };
-
   return (
     <div onClick={onClick}>
-      <DropdownMenu open={menuOpened} onOpenChange={onOpenChange}>
+      <DropdownMenu open={menuOpened} onOpenChange={setMenuOpened}>
         <DropdownMenuTrigger asChild>
           <Button variant={"ghost"} className={"p-1"}>
             <VscFilter />
@@ -71,13 +62,13 @@ export function YearFilter() {
                 <FormField
                   control={form.control}
                   name="start"
-                  render={({ field: { ...rest } }) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormControl>
                         <Input
                           type={"number"}
                           placeholder={"Начало"}
-                          {...rest}
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />

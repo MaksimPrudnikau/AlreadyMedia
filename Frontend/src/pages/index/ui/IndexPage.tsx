@@ -2,14 +2,19 @@ import { useContext } from "react";
 import { tableContext } from "@/widgets/nasa-table/lib";
 import { NasaTable } from "@/widgets/nasa-table";
 import { useDatasetQuery } from "@/pages/index/api";
+import { toast } from "sonner";
 
 export function IndexPage() {
   const { filters } = useContext(tableContext);
 
-  const { data, isFetching } = useDatasetQuery(filters);
+  const { data, isFetching, isError, error } = useDatasetQuery(filters);
 
   if (!data && isFetching) {
     return <div>Загрузка данных...</div>;
+  }
+
+  if (isError) {
+    toast(error["title"] ?? error.message);
   }
 
   return (

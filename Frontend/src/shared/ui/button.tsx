@@ -2,7 +2,7 @@ import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { LucideLoader2 } from "lucide-react";
-import { cn } from "@/shared/lib";
+import { cn } from "@/shared/lib/index";
 
 const buttonVariants = cva(
   "cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium" +

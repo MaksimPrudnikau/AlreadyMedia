@@ -6,15 +6,11 @@ export const useDatasetQuery = (filters: NasaDatasetFilters) =>
   useQuery({
     queryKey: ["dataset", filters],
     queryFn: async () => {
-      const { data, error } = await client.GET("/Nasa/dataset", {
+      const { data } = await client.GET("/Nasa/dataset", {
         params: {
           query: filters,
         },
       });
-
-      if (error) {
-        throw new Error(error);
-      }
 
       return data;
     },

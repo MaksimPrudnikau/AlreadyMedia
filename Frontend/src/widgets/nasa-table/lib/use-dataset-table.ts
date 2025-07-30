@@ -4,6 +4,7 @@ import {
   ColumnDef,
   getCoreRowModel,
   getSortedRowModel,
+  PaginationState,
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
@@ -47,14 +48,11 @@ export const useDatasetTable = (response?: NasaDatasetListResponse) => {
   );
 
   const data = useMemo(() => response?.dataset ?? [], [response]);
-  const pagination = useMemo(
-    () => ({
-      pageIndex: filters?.Page ?? 0,
-      pageSize: filters?.ItemsPerPage ?? 0,
-      totalPages: response?.pagination.totalPages ?? 0,
-    }),
-    [filters, response],
-  );
+  const pagination: PaginationState & { totalPages: number } = {
+    pageIndex: filters?.Page ?? 0,
+    pageSize: filters?.ItemsPerPage ?? 0,
+    totalPages: response?.pagination.totalPages ?? 0,
+  };
 
   const table = useReactTable({
     columns,

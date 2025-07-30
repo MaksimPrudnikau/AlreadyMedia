@@ -117,25 +117,3 @@ export function YearFilter() {
     </div>
   );
 }
-
-// <DropdownMenu open={menuOpened} onOpenChange={onOpenChange}>
-//   <DropdownMenuTrigger asChild>
-//     <Button variant={"ghost"} className={"p-1"}>
-//       <VscFilter />
-//     </Button>
-//   </DropdownMenuTrigger>
-//   <DropdownMenuContent asChild>
-//     <form className={"w-28 flex flex-col gap-1"} onSubmit={onFormSubmit}>
-//       {props.children}
-//       <div className={"w-full flex justify-end"}>
-//         <Button
-//           type={"submit"}
-//           variant={"secondary"}
-//           disabled={props.disabled}
-//         >
-//           <SaveIcon />
-//         </Button>
-//       </div>
-//     </form>
-//   </DropdownMenuContent>
-// </DropdownMenu>

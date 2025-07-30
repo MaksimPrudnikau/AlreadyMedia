@@ -32,8 +32,8 @@ export function YearFilter() {
   const form = useForm<YearFilterSchema>({
     resolver: zodResolver(yearFilterSchema),
     defaultValues: {
-      start: filters?.FromYear?.toString(),
-      end: filters?.ToYear?.toString(),
+      start: filters?.FromYear?.toString() ?? "",
+      end: filters?.ToYear?.toString() ?? "",
     },
   });
 
@@ -47,9 +47,18 @@ export function YearFilter() {
     setMenuOpened(false);
   };
 
+  const onOpenChange = (next: boolean) => {
+    if (!next && !form.formState.isValid) {
+      form.reset();
+      setMenuOpened(next);
+    }
+
+    setMenuOpened(next);
+  };
+
   return (
     <div onClick={onClick}>
-      <DropdownMenu open={menuOpened} onOpenChange={setMenuOpened}>
+      <DropdownMenu open={menuOpened} onOpenChange={onOpenChange}>
         <DropdownMenuTrigger asChild>
           <Button variant={"ghost"} className={"p-1"}>
             <VscFilter />

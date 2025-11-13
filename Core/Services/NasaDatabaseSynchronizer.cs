@@ -17,17 +17,10 @@ public sealed class NasaDatabaseSynchronizer(AppDbContext db, ILogger<NasaDataba
     private const int BatchSize = 900;
     private readonly static BulkConfig BulkConfig = new() { BatchSize = BatchSize, EnableStreaming = true };
     
-    public async Task<SyncResult> ApplyAsync(ICollection<NasaDataset> datasets, CancellationToken ct = default)
+    public Task<SyncResult> ApplyAsync(ICollection<NasaDataset> datasets, CancellationToken ct = default)
     {
         var strategy = db.Database.CreateExecutionStrategy();
-        var syncResult = new SyncResult(0, 0);
-
-        await strategy.ExecuteAsync(async () =>
-        {
-            syncResult = await ApplyWithTransaction(datasets, ct);
-        });
-
-        return syncResult;
+        return strategy.ExecuteAsync(() => ApplyWithTransaction(datasets, ct));
     }
 
     private async Task<SyncResult> ApplyWithTransaction(ICollection<NasaDataset> datasets, CancellationToken ct = default)
@@ -79,6 +72,11 @@ public sealed class NasaDatabaseSynchronizer(AppDbContext db, ILogger<NasaDataba
         var toInsert = fetchedDatasets
             .Where(d => !existingIds.Contains(d.Id))
             .ToList();
+
+        if (toInsert.Count == 0)
+        {
+            return 0;
+        }
         
         await db.BulkInsertAsync(
             toInsert,

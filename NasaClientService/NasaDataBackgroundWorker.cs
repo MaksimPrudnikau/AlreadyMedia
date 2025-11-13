@@ -1,48 +1,68 @@
 using Core.Configs;
 using Core.Services;
 using Microsoft.Extensions.Options;
+using Polly;
+using Polly.Retry;
+using System.Diagnostics;
 
 namespace NasaClientService;
 
-public class NasaDatasetWorker(
-    IServiceProvider services,
+public sealed class NasaDatasetWorker(
+    IServiceScopeFactory scopeFactory,
     ILogger<NasaDatasetWorker> logger,
-    IOptions<NasaDatasetConfig> options,
-    INasaBackgroundService nasaService
+    IOptions<NasaDatasetConfig> options
 ) : BackgroundService
 {
+    private readonly SemaphoreSlim _executionSemaphore = new(1, 1);
 
     protected async override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
+        logger.LogInformation("NASA Dataset Worker started.");
+
+        var interval = TimeSpan.FromSeconds(options.Value.SyncIntervalSeconds);
+        logger.LogInformation("Sync interval set to {Interval}s", interval.TotalSeconds);
+
+        using var timer = new PeriodicTimer(interval);
+        do
         {
-            await UpdateDataset();
-            await RetryUpdate(stoppingToken);
-        }
+            await UpsertOnceAsync(stoppingToken);
+        } while (await timer.WaitForNextTickAsync(stoppingToken));
+
+        logger.LogInformation("NASA Dataset Worker stopped (timer ended).");
     }
 
-    private async Task UpdateDataset()
+    private async Task UpsertOnceAsync(CancellationToken ct)
     {
-        logger.LogInformation("Starting NASA data sync at: {time}", DateTimeOffset.Now);
-
-        try
+        var isPreviousTaskCompleted = await _executionSemaphore.WaitAsync(0, ct);
+        
+        if (!isPreviousTaskCompleted)
         {
-            await using var scope = services.CreateAsyncScope();
-
-            var result = await nasaService.UpsertDatasetsAsync();
-
-            logger.LogInformation("Successfully added {count} NASA images", result.added);
-            logger.LogInformation("Successfully removed {count} NASA images", result.removed);
+            logger.LogWarning("Previous NASA sync is still running. Skipping this iteration to prevent overlap.");
+            return;
         }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error during NASA data sync");
-        }
+
+        await ExecuteUpsertAsync(ct);
+        _executionSemaphore.Release();
     }
 
-    private async Task RetryUpdate(CancellationToken stoppingToken)
+    private async Task ExecuteUpsertAsync(CancellationToken ct)
     {
-        var syncInterval = options.Value.SyncIntervalSeconds;
-        await Task.Delay(TimeSpan.FromSeconds(syncInterval), stoppingToken);
+        await using var scope = scopeFactory.CreateAsyncScope();
+        var nasaService = scope.ServiceProvider.GetRequiredService<INasaBackgroundService>();
+
+        logger.LogInformation("Starting NASA data sync at {Time}", DateTimeOffset.Now);
+
+        var result = await nasaService.UpsertDatasetsAsync(ct);
+        
+        logger.LogInformation(
+            "NASA sync completed successfully: {Added} datasets added, {Removed} removed",
+            result.Added,
+            result.Removed);
+    }
+
+    public override void Dispose()
+    {
+        _executionSemaphore.Dispose();
+        base.Dispose();
     }
 }

@@ -8,7 +8,7 @@ public sealed class AppDbContext : DbContext
     private readonly IConfiguration _configuration;
     public DbSet<NasaDataset> NasaDbSet { get; init; }
     
-    public AppDbContext(DbContextOptions<AppDbContext> context, IConfiguration configuration) : base(context)
+    public AppDbContext(DbContextOptions<AppDbContext> options, IConfiguration configuration) : base(options)
     {
         _configuration = configuration;
 
@@ -18,7 +18,17 @@ public sealed class AppDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseNpgsql(_configuration.GetConnectionString("Postgres"));
+        var connection = _configuration.GetConnectionString("Postgres");
+        optionsBuilder.UseNpgsql(
+            connection,
+            builder =>
+            {
+                builder.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(10),
+                    errorCodesToAdd: null);
+            });
+        
         optionsBuilder.EnableSensitiveDataLogging();
         base.OnConfiguring(optionsBuilder);
     }
@@ -29,7 +39,9 @@ public sealed class AppDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
 
-            entity.HasIndex(e => e.Year); 
+            entity.Property(e => e.Date);
+            
+            entity.HasIndex(e => e.Date);
         
             entity.OwnsOne(e => e.Geolocation, g =>
             {

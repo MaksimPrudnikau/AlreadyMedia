@@ -22,6 +22,8 @@ public static class ServicesExtensions
         
         AddHttpClient(services);
         
+        services.AddScoped<INasaDatabaseSynchronizer, NasaDatabaseSynchronizer>();
+        
         services.AddTransient<INasaHttpClient, NasaHttpClient>();
         services.AddTransient<INasaBackgroundService, NasaBackgroundService>();
 
@@ -31,7 +33,7 @@ public static class ServicesExtensions
 
     private static void AddHttpClient(IServiceCollection services)
     {
-        var client = new HttpClient()
+        var client = new HttpClient
         {
             Timeout = TimeSpan.FromSeconds(30),
             DefaultRequestHeaders = 

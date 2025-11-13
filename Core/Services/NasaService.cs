@@ -20,7 +20,7 @@ public class NasaService(AppDbContext dbContext, INasaCacheService cacheService)
         }
 
         var query = BuildQueryFromFilters(request)
-            .GroupBy(x => x.Year);
+            .GroupBy(x => x.Date);
 
         double totalGroupsCount = await query.CountAsync(cancellationToken: token);
         var totalPages = (int)Math.Ceiling(totalGroupsCount / request.ItemsPerPage);
@@ -53,14 +53,17 @@ public class NasaService(AppDbContext dbContext, INasaCacheService cacheService)
         if (request.FromYear.HasValue)
         {
             query = query
-                .Where(x => x.Year.HasValue)
-                .Where(x => x.Year!.Value.Year >= request.FromYear.Value);
+                .Where(x => x.Date.HasValue)
+                .Where(x => x.Date!.Value.Year >= request.FromYear.Value);
         }
 
         if (request.ToYear.HasValue)
         {
+            var startDate = new DateTime(1, 1, request.ToYear.Value);
+            var endDate = new DateTime(1, 1, request.ToYear.Value + 1).AddMilliseconds(-1);
+            
             query = query
-                .Where(x => !x.Year.HasValue || x.Year!.Value.Year <= request.ToYear.Value);
+                .Where(x => x.Date >= startDate);
         }
 
         if (request.RecClass is not null)

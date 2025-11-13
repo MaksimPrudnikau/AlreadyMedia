@@ -17,7 +17,8 @@ builder.Services.AddHttpClient<INasaHttpClient, NasaHttpClient>();
 builder.Services.AddTransient<IRedisCacheService, RedisCacheService>();
 builder.Services.AddTransient<INasaCacheService, NasaCacheService>();
 builder.Services.AddTransient<INasaService, NasaService>();
-builder.Services.AddTransient<INasaBackgroundService, NasaBackgroundService>();
+
+builder.Services.AddScoped<INasaBackgroundService, NasaBackgroundService>();
 
 builder.Services.AddControllers();
 

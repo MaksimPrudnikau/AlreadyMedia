@@ -11,8 +11,8 @@ public class NasaController (INasaService nasaService): ControllerBase
     
     [HttpGet("dataset")]
     [ProducesResponseType<NasaDatasetListResponse>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetDataset([FromQuery] NasaDatasetListRequest request)
+    public Task<NasaDatasetListResponse> GetDataset([FromQuery] NasaDatasetListRequest request, CancellationToken ct = default)
     {
-        return Ok(await nasaService.GetFilteredDatasetListResponse(request));
+        return nasaService.GetFilteredDatasetListResponse(request);
     }
 }

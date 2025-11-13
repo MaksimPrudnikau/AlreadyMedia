@@ -1,89 +1,38 @@
+using Core.Exceptions;
+using Core.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Services;
 
 public interface INasaBackgroundService
 {
-    Task<(int removed, int added)> UpsertDatasetsAsync();
+    Task<SyncResult> UpsertDatasetsAsync(CancellationToken ct = default);
 }
 
-public class NasaBackgroundService : INasaBackgroundService
+public sealed class NasaBackgroundService(
+    INasaHttpClient nasaClient,
+    INasaDatabaseSynchronizer synchronizer,
+    ILogger<NasaBackgroundService> logger) : INasaBackgroundService
 {
-    private readonly INasaHttpClient _nasaClient;
-    private readonly AppDbContext _appDbContext;
-
-    public NasaBackgroundService(INasaHttpClient nasaClient, IServiceProvider serviceProvider)
+    public async Task<SyncResult> UpsertDatasetsAsync(CancellationToken ct = default)
     {
-        _nasaClient = nasaClient;
+        logger.LogInformation("NASA dataset sync started.");
 
-        var scope = serviceProvider.CreateScope();
-        _appDbContext = scope.ServiceProvider.GetService<AppDbContext>()!;
-    }
-
-    public async Task<(int removed, int added)> UpsertDatasetsAsync()
-    {
-        var remoteDatasets = await FetchRemoteDatasetsAsync();
-        return await SyncWithDatabaseAsync(remoteDatasets);
-    }
-
-    private async Task<IDictionary<int, NasaDataset>> FetchRemoteDatasetsAsync()
-    {
-        var datasets = await _nasaClient.GetDatasetAsync();
-        return datasets.ToDictionary(dataset => dataset.Id);
-    }
-
-    private async Task<(int removed, int added)> SyncWithDatabaseAsync(IDictionary<int, NasaDataset> remoteDatasets)
-    {
-        var existingDatasets = await GetExistingDatasetsAsync(remoteDatasets.Keys);
-        
-        var removed = await RemoveStaleDatasetsAsync(remoteDatasets);
-        var added = await AddNewDatasetsAsync(remoteDatasets, existingDatasets);
-    
-        await _appDbContext.SaveChangesAsync();
-
-        return (removed, added);
-    }
-    
-    private async Task<IList<NasaDataset>> GetExistingDatasetsAsync(ICollection<int> remoteDatasetIds)
-    {
-        return await _appDbContext.NasaDbSet
-            .AsNoTracking()
-            .Where(dataset => remoteDatasetIds.Contains(dataset.Id))
-            .ToListAsync();
-    }
-
-    private async Task<int> RemoveStaleDatasetsAsync(IDictionary<int, NasaDataset> remoteDatasets)
-    {
-        var remoteDatasetIds = remoteDatasets.Keys.ToHashSet();
-        var staleDatasets = await _appDbContext.NasaDbSet
-            .AsNoTracking()
-            .Where(dataset => !remoteDatasetIds.Contains(dataset.Id))
-            .ToListAsync();
-
-        if (staleDatasets.Count != 0)
+        var remoteDatasets = await nasaClient.GetDatasetAsync(ct);
+        if (remoteDatasets is not { Count: > 0 })
         {
-            _appDbContext.NasaDbSet.RemoveRange(staleDatasets);
+            logger.LogInformation("NASA returned an empty list, nothing to sync.");
+            return new(0, 0);
         }
 
-        return staleDatasets.Count;
-    }
+        var syncResult = await synchronizer.ApplyAsync(remoteDatasets, ct);
 
+        logger.LogInformation(
+            "NASA sync completed successfully: +{Added}, –{Removed}",
+            syncResult.Added,
+            syncResult.Removed);
 
-    private async Task<int> AddNewDatasetsAsync(
-        IDictionary<int, NasaDataset> remoteDatasets,
-        IList<NasaDataset> existingDatasets)
-    {
-        var existingDatasetIds = existingDatasets.Select(d => d.Id).ToHashSet();
-        var newDatasets = remoteDatasets.Values
-            .Where(dataset => !existingDatasetIds.Contains(dataset.Id))
-            .ToList();
-
-        if (newDatasets.Count != 0)
-        {
-            await _appDbContext.NasaDbSet.AddRangeAsync(newDatasets);
-        }
-
-        return newDatasets.Count;
+        return syncResult;
     }
 }

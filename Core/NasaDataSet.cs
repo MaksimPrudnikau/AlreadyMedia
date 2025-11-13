@@ -13,24 +13,7 @@ public class NasaDataset
     public double? Mass { get; init; }
     public string? Fall { get; init; }
 
-    private readonly DateTime? _year;
-
-    public DateTime? Year
-    {
-        get => _year;
-        init
-        {
-            if (!value.HasValue)
-            {
-                _year = null;
-                return;
-            }
-            
-            _year = value.Value.Kind == DateTimeKind.Unspecified
-                ? DateTime.SpecifyKind(value.Value, DateTimeKind.Utc)
-                : value.Value.ToUniversalTime();
-        }
-    }
+    public DateTime? Date { get; init; }
 
     public double RecLat { get; init; }
     public double RecLong { get; init; }

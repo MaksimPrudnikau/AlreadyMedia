@@ -17,22 +17,14 @@ public sealed class NasaBackgroundService(
 {
     public async Task<SyncResult> UpsertDatasetsAsync(CancellationToken ct = default)
     {
-        logger.LogInformation("NASA dataset sync started.");
-
         var remoteDatasets = await nasaClient.GetDatasetAsync(ct);
-        if (remoteDatasets is not { Count: > 0 })
+        if (remoteDatasets is { Count: > 0 })
         {
-            logger.LogInformation("NASA returned an empty list, nothing to sync.");
-            return new(0, 0);
+            return await synchronizer.ApplyAsync(remoteDatasets, ct);
         }
 
-        var syncResult = await synchronizer.ApplyAsync(remoteDatasets, ct);
+        logger.LogInformation("NASA returned an empty list, nothing to sync.");
+        return new(0, 0, 0);
 
-        logger.LogInformation(
-            "NASA sync completed successfully: +{Added}, –{Removed}",
-            syncResult.Added,
-            syncResult.Removed);
-
-        return syncResult;
     }
 }

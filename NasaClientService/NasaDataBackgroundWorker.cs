@@ -55,9 +55,10 @@ public sealed class NasaDatasetWorker(
         var result = await nasaService.UpsertDatasetsAsync(ct);
         
         logger.LogInformation(
-            "NASA sync completed successfully: {Added} datasets added, {Removed} removed",
+            "NASA sync completed successfully: +{Added}, -{Removed}, +-{Updated}",
             result.Added,
-            result.Removed);
+            result.Removed,
+            result.Updated);
     }
 
     public override void Dispose()

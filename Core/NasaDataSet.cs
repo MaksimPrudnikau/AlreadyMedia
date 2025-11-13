@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
+using Core.Converters;
 using Microsoft.EntityFrameworkCore;
 
 namespace Core;
@@ -13,6 +15,9 @@ public class NasaDataset
     public double? Mass { get; init; }
     public string? Fall { get; init; }
 
+    [JsonPropertyName("Year")]
+    [Column(TypeName = "timestamp")]
+    [JsonConverter(typeof(NullableDateTimeJsonConverter))]
     public DateTime? Date { get; init; }
 
     public double RecLat { get; init; }

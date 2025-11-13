@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Core.Configs;
+using Core.Converters;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
@@ -38,6 +39,7 @@ public class NasaHttpClient(HttpClient httpClient, IOptions<NasaDatasetConfig> o
     {
         PropertyNameCaseInsensitive = true,
         NumberHandling = JsonNumberHandling.AllowReadingFromString,
+        Converters = { new NullableDateTimeJsonConverter() }
     };
     
     public async Task<ICollection<NasaDataset>> GetDatasetAsync(CancellationToken ct = default)

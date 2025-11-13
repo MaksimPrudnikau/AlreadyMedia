@@ -29,7 +29,6 @@ public sealed class AppDbContext : DbContext
                     errorCodesToAdd: null);
             });
         
-        optionsBuilder.EnableSensitiveDataLogging();
         base.OnConfiguring(optionsBuilder);
     }
 

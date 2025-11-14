@@ -25,14 +25,14 @@ public class NasaHttpClient(HttpClient httpClient, IOptions<NasaDatasetConfig> o
         .Or<JsonException>()
         .Or<NotSupportedException>()
         .WaitAndRetryAsync(
-            retryCount: 3,
+            retryCount: options.Value.MaxRetries,
             sleepDurationProvider: attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt)), // 2, 4, 8... sec
             onRetry: (exception, timeSpan, attempt) =>
             {
                 logger.LogWarning(
                     exception,
-                    "NASA sync failed (attempt {Attempt}/3). Retrying in {Delay}s...",
-                    attempt, timeSpan.TotalSeconds);
+                    "NASA sync failed (attempt {Attempt}/{MaxRetries}). Retrying in {Delay}s...",
+                    attempt, options.Value.MaxRetries, timeSpan.TotalSeconds);
             });
     
 

@@ -1,5 +1,7 @@
+using Core.Configs;
 using Core.Models;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Core.Services;
 
@@ -12,6 +14,7 @@ public sealed class NasaBackgroundService(
     AppDbContext db,
     INasaHttpClient nasaClient,
     INasaDatabaseSynchronizer synchronizer,
+    IOptions<NasaDatasetConfig> options,
     ILogger<NasaBackgroundService> logger) : INasaBackgroundService
 {
     private const int BatchSize = 900;
@@ -23,8 +26,13 @@ public sealed class NasaBackgroundService(
 
         try
         {
-            syncResult =  await TryUpsertDatasetsAsync(ct);
+            syncResult = await TryUpsertDatasetsAsync(ct);
             await tx.CommitAsync(ct);
+        }
+        catch (HttpRequestException e)
+        {
+            throw new ApplicationException(
+                $"NASA data sync failed after {options.Value.MaxRetries} attempts. Last error: {e.Message}");
         }
         catch
         {
@@ -52,11 +60,7 @@ public sealed class NasaBackgroundService(
             syncResult += batchResult;
             logger.LogInformation("Successfully batched: +{Added}, -{Removed}, +-{Updated}", 
                 batchResult.Added, batchResult.Removed, batchResult.Updated);
-
         }
-        
-        logger.LogInformation("Syncing completed: total +{Added}, -{Removed}, +-{Updated}", 
-            syncResult.Added, 0, syncResult.Updated);
 
         return syncResult;
     }

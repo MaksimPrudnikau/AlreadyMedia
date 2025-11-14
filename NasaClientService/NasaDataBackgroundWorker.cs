@@ -1,9 +1,6 @@
 using Core.Configs;
 using Core.Services;
 using Microsoft.Extensions.Options;
-using Polly;
-using Polly.Retry;
-using System.Diagnostics;
 
 namespace NasaClientService;
 
@@ -13,8 +10,6 @@ public sealed class NasaDatasetWorker(
     IOptions<NasaDatasetConfig> options
 ) : BackgroundService
 {
-    private readonly SemaphoreSlim _executionSemaphore = new(1, 1);
-
     protected async override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         logger.LogInformation("NASA Dataset Worker started.");
@@ -25,24 +20,10 @@ public sealed class NasaDatasetWorker(
         using var timer = new PeriodicTimer(interval);
         do
         {
-            await UpsertOnceAsync(stoppingToken);
+            await ExecuteUpsertAsync(stoppingToken);
         } while (await timer.WaitForNextTickAsync(stoppingToken));
 
         logger.LogInformation("NASA Dataset Worker stopped (timer ended).");
-    }
-
-    private async Task UpsertOnceAsync(CancellationToken ct)
-    {
-        var isPreviousTaskCompleted = await _executionSemaphore.WaitAsync(0, ct);
-        
-        if (!isPreviousTaskCompleted)
-        {
-            logger.LogWarning("Previous NASA sync is still running. Skipping this iteration to prevent overlap.");
-            return;
-        }
-
-        await ExecuteUpsertAsync(ct);
-        _executionSemaphore.Release();
     }
 
     private async Task ExecuteUpsertAsync(CancellationToken ct)
@@ -53,17 +34,17 @@ public sealed class NasaDatasetWorker(
         logger.LogInformation("Starting NASA data sync at {Time}", DateTimeOffset.Now);
 
         var result = await nasaService.UpsertDatasetsAsync(ct);
-        
+
+        if (result.IsEmpty)
+        {
+            logger.LogInformation("Nothing to sync");
+            return;
+        }
+
         logger.LogInformation(
             "NASA sync completed successfully: +{Added}, -{Removed}, +-{Updated}",
             result.Added,
             result.Removed,
             result.Updated);
-    }
-
-    public override void Dispose()
-    {
-        _executionSemaphore.Dispose();
-        base.Dispose();
     }
 }

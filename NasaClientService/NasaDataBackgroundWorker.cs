@@ -10,7 +10,9 @@ public sealed class NasaDatasetWorker(
     IOptions<NasaDatasetConfig> options
 ) : BackgroundService
 {
-    protected async override Task ExecuteAsync(CancellationToken stoppingToken)
+    private readonly SemaphoreSlim _executionSemaphore = new(1, 1);
+
+    protected async override Task ExecuteAsync(CancellationToken ct)
     {
         logger.LogInformation("NASA Dataset Worker started.");
 
@@ -20,10 +22,31 @@ public sealed class NasaDatasetWorker(
         using var timer = new PeriodicTimer(interval);
         do
         {
-            await ExecuteUpsertAsync(stoppingToken);
-        } while (await timer.WaitForNextTickAsync(stoppingToken));
+            _ = Task.Run(() => UpsertOnceAsync(ct), ct);
+        } while (await timer.WaitForNextTickAsync(ct));
 
         logger.LogInformation("NASA Dataset Worker stopped (timer ended).");
+    }
+
+    private async Task UpsertOnceAsync(CancellationToken ct)
+    {
+        var isPreviousTaskCompleted = await _executionSemaphore.WaitAsync(0, ct);
+        
+        if (!isPreviousTaskCompleted)
+        {
+            logger.LogWarning("Previous NASA sync is still running. Skipping this iteration to prevent overlap.");
+            return;
+        }
+
+        try
+        {
+            await ExecuteUpsertAsync(ct);
+        }
+        finally
+        {
+            _executionSemaphore.Release();
+        }
+
     }
 
     private async Task ExecuteUpsertAsync(CancellationToken ct)
@@ -40,11 +63,17 @@ public sealed class NasaDatasetWorker(
             logger.LogInformation("Nothing to sync");
             return;
         }
-
+        
         logger.LogInformation(
             "NASA sync completed successfully: +{Added}, -{Removed}, +-{Updated}",
             result.Added,
             result.Removed,
             result.Updated);
+    }
+
+    public override void Dispose()
+    {
+        _executionSemaphore.Dispose();
+        base.Dispose();
     }
 }

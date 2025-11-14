@@ -31,7 +31,7 @@ public class NasaService(AppDbContext dbContext, INasaCacheService cacheService)
             .Where(x => x.RecClass != null)
             .GroupBy(x => x.RecClass)
             .Select(x => x.Key!)
-            .ToListAsync(cancellationToken: ct);
+            .ToListAsync(ct);
 
         var res = new NasaDatasetListResponse
         {

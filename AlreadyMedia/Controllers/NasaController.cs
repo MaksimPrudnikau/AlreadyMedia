@@ -13,6 +13,6 @@ public class NasaController (INasaService nasaService): ControllerBase
     [ProducesResponseType<NasaDatasetListResponse>(StatusCodes.Status200OK)]
     public Task<NasaDatasetListResponse> GetDataset([FromQuery] NasaDatasetListRequest request, CancellationToken ct = default)
     {
-        return nasaService.GetFilteredDatasetListResponse(request);
+        return nasaService.GetFilteredDatasetListResponse(request, ct);
     }
 }

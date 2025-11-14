@@ -7,8 +7,8 @@ namespace Core.Services;
 
 public interface INasaCacheService
 {
-    Task<NasaDatasetListResponse?> GetAsync(NasaDatasetListRequest request, CancellationToken token);
-    Task SaveAsync(NasaDatasetListRequest request, NasaDatasetListResponse response);
+    Task<NasaDatasetListResponse?> GetAsync(NasaDatasetListRequest request, CancellationToken ct = default);
+    Task SaveAsync(NasaDatasetListRequest request, NasaDatasetListResponse response, CancellationToken ct = default);
 
 }
 
@@ -19,17 +19,17 @@ public class NasaCacheService(IRedisCacheService cache, IOptions<NasaDatasetConf
         AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(options.Value.SyncIntervalSeconds)
     };
     
-    public async Task<NasaDatasetListResponse?> GetAsync(NasaDatasetListRequest request, CancellationToken token = default)
+    public async Task<NasaDatasetListResponse?> GetAsync(NasaDatasetListRequest request, CancellationToken ct = default)
     {
         var key = BuildKey(request);
 
-        return await cache.GetAsync<NasaDatasetListResponse?>(key, token);
+        return await cache.GetAsync<NasaDatasetListResponse?>(key, ct);
     }
 
-    public async Task SaveAsync(NasaDatasetListRequest request, NasaDatasetListResponse set)
+    public async Task SaveAsync(NasaDatasetListRequest request, NasaDatasetListResponse set, CancellationToken ct = default)
     {
         var key = BuildKey(request);
-        await cache.SetAsync(key, set, _options);
+        await cache.SetAsync(key, set, _options, ct);
 
     }
 

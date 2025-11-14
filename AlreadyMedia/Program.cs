@@ -5,8 +5,6 @@ using Core.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 builder.Services.AddRedis(builder.Configuration);
@@ -14,11 +12,12 @@ builder.Services.AddRedis(builder.Configuration);
 builder.Services.AddDbContext<AppDbContext>();
 builder.Services.AddHttpClient<INasaHttpClient, NasaHttpClient>();
 
+builder.Services.AddScoped<INasaDatabaseSynchronizer, NasaDatabaseSynchronizer>();
+
 builder.Services.AddTransient<IRedisCacheService, RedisCacheService>();
 builder.Services.AddTransient<INasaCacheService, NasaCacheService>();
 builder.Services.AddTransient<INasaService, NasaService>();
-
-builder.Services.AddScoped<INasaBackgroundService, NasaBackgroundService>();
+builder.Services.AddTransient<INasaBackgroundService, NasaBackgroundService>();
 
 builder.Services.AddControllers();
 
@@ -42,7 +41,6 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();

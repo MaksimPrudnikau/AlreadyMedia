@@ -6,14 +6,14 @@ namespace Core.Services;
 
 public interface INasaService
 {
-    Task<NasaDatasetListResponse> GetFilteredDatasetListResponse(NasaDatasetListRequest request, CancellationToken token = default);
+    Task<NasaDatasetListResponse> GetFilteredDatasetListResponse(NasaDatasetListRequest request, CancellationToken ct = default);
 }
 
 public class NasaService(AppDbContext dbContext, INasaCacheService cacheService) : INasaService
 {
-    public async Task<NasaDatasetListResponse> GetFilteredDatasetListResponse(NasaDatasetListRequest request, CancellationToken token = default)
+    public async Task<NasaDatasetListResponse> GetFilteredDatasetListResponse(NasaDatasetListRequest request, CancellationToken ct = default)
     {
-        var cached = await cacheService.GetAsync(request, token);
+        var cached = await cacheService.GetAsync(request, ct);
         if (cached is not null)
         {
             return cached;
@@ -22,16 +22,16 @@ public class NasaService(AppDbContext dbContext, INasaCacheService cacheService)
         var query = BuildQueryFromFilters(request)
             .GroupBy(x => x.Date);
 
-        double totalGroupsCount = await query.CountAsync(cancellationToken: token);
+        double totalGroupsCount = await query.CountAsync(ct);
         var totalPages = (int)Math.Ceiling(totalGroupsCount / request.ItemsPerPage);
 
-        var groupedDataset = await GetGroupedDatasetAsync(query, request, token);
+        var groupedDataset = await GetGroupedDatasetAsync(query, request, ct);
 
         var recClasses = await dbContext.NasaDbSet
             .Where(x => x.RecClass != null)
             .GroupBy(x => x.RecClass)
             .Select(x => x.Key!)
-            .ToListAsync(cancellationToken: token);
+            .ToListAsync(cancellationToken: ct);
 
         var res = new NasaDatasetListResponse
         {
@@ -40,7 +40,7 @@ public class NasaService(AppDbContext dbContext, INasaCacheService cacheService)
             RecClasses = recClasses
         };
 
-        await cacheService.SaveAsync(request, res);
+        await cacheService.SaveAsync(request, res, ct);
 
         return res;
     }
@@ -52,18 +52,18 @@ public class NasaService(AppDbContext dbContext, INasaCacheService cacheService)
 
         if (request.FromYear.HasValue)
         {
+            var startDate = new DateTime(request.FromYear.Value, 1, 1);
+            
             query = query
-                .Where(x => x.Date.HasValue)
-                .Where(x => x.Date!.Value.Year >= request.FromYear.Value);
+                .Where(x => x.Date >= startDate);
         }
 
         if (request.ToYear.HasValue)
         {
-            var startDate = new DateTime(1, 1, request.ToYear.Value);
-            var endDate = new DateTime(1, 1, request.ToYear.Value + 1).AddMilliseconds(-1);
+            var endDate = new DateTime(request.ToYear.Value + 1, 1, 1);
             
             query = query
-                .Where(x => x.Date >= startDate);
+                .Where(x => x.Date <= endDate);
         }
 
         if (request.RecClass is not null)
@@ -86,7 +86,7 @@ public class NasaService(AppDbContext dbContext, INasaCacheService cacheService)
     private async static Task<IEnumerable<NasaDatasetGroupedModel>> GetGroupedDatasetAsync(
         IQueryable<IGrouping<DateTime?, NasaDataset>> query,
         NasaDatasetListRequest request,
-        CancellationToken token = default)
+        CancellationToken ct = default)
     {
         return await query
             .Select(x => new NasaDatasetGroupedModel
@@ -97,6 +97,6 @@ public class NasaService(AppDbContext dbContext, INasaCacheService cacheService)
             })
             .OrderBy(x => x.Year)
             .ApplyPagination(request)
-            .ToListAsync(token);
+            .ToListAsync(ct);
     }
 }

@@ -19,15 +19,7 @@ public sealed class AppDbContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         var connection = _configuration.GetConnectionString("Postgres");
-        optionsBuilder.UseNpgsql(
-            connection,
-            builder =>
-            {
-                builder.EnableRetryOnFailure(
-                    maxRetryCount: 5,
-                    maxRetryDelay: TimeSpan.FromSeconds(10),
-                    errorCodesToAdd: null);
-            });
+        optionsBuilder.UseNpgsql(connection);
         
         base.OnConfiguring(optionsBuilder);
     }

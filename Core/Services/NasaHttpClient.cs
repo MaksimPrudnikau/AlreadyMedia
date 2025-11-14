@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Core.Configs;
@@ -11,7 +12,7 @@ namespace Core.Services;
 
 public interface INasaHttpClient
 {
-    Task<ICollection<NasaDataset>> GetDatasetAsync(CancellationToken ct = default);
+    Task<IAsyncEnumerable<ICollection<NasaDataset>>> GetBatchedDatasetsAsync(int batchSize, CancellationToken ct = default);
 }
 
 public class NasaHttpClient(HttpClient httpClient, IOptions<NasaDatasetConfig> options, ILogger<NasaHttpClient> logger) : INasaHttpClient
@@ -42,25 +43,53 @@ public class NasaHttpClient(HttpClient httpClient, IOptions<NasaDatasetConfig> o
         Converters = { new NullableDateTimeJsonConverter() }
     };
     
-    public async Task<ICollection<NasaDataset>> GetDatasetAsync(CancellationToken ct = default)
+    public async Task<IAsyncEnumerable<ICollection<NasaDataset>>> GetBatchedDatasetsAsync(int batchSize, CancellationToken ct = default)
     {
-        var dataset = await _retryPolicy.ExecuteAsync(TryGetDatasetAsync, ct);
-        logger.LogInformation("Successfully fetched: {count} objects", dataset.Count);
-        
-        return dataset;
-
+        var stream = await _retryPolicy.ExecuteAsync(FetchDatasetStreamAsync, ct);
+        return StreamBatchedDatasetsAsync(stream, batchSize, ct);
     }
 
-    private async Task<ICollection<NasaDataset>> TryGetDatasetAsync(CancellationToken ct = default)
+    private async IAsyncEnumerable<ICollection<NasaDataset>> StreamBatchedDatasetsAsync(
+        Stream stream, 
+        int batchSize, 
+        [EnumeratorCancellation]CancellationToken ct = default)
+    {
+        logger.LogInformation("Starting sync with with {BatchSize} batch size", batchSize);
+        
+        var datasets = JsonSerializer.DeserializeAsyncEnumerable<NasaDataset>(stream, JsonSerializerOptions, ct);
+        var batch = new List<NasaDataset>();
+        
+        await foreach (var dataset in datasets)
+        {
+            if (dataset is null)
+            {
+                continue;
+            }
+            
+            if (batch.Count < batchSize)
+            {
+                batch.Add(dataset);
+                continue;
+            }
+
+            yield return batch;
+            batch.Clear();
+        }
+
+        if (batch.Count > 0)
+        {
+            yield return batch;
+        }
+    }
+    
+
+    private async Task<Stream> FetchDatasetStreamAsync(CancellationToken ct = default)
     {
         var connection = options.Value.SourceUrl;
 
         var response = await httpClient.GetAsync(connection, ct);
         response.EnsureSuccessStatusCode();
 
-        var content = await response.Content.ReadAsStringAsync(ct);
-
-        var dataSet = JsonSerializer.Deserialize<NasaDataset[]>(content, JsonSerializerOptions);
-        return dataSet ?? [];
+        return await response.Content.ReadAsStreamAsync(ct);
     }
 }
